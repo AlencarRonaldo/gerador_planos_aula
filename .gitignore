@@ -1,0 +1,30 @@
+# Node.js
+node_modules/
+.next/
+out/
+build/
+.env*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+planos_gerados/
+config.json
+
+# IDE
+.vscode/
+.claude/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db

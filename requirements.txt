@@ -1,0 +1,5 @@
+streamlit
+openpyxl
+google-genai
+python-docx
+supabase
