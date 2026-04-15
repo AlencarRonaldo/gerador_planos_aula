@@ -324,9 +324,24 @@ export default function GeradorPage() {
               <span className="text-[10px] font-black uppercase text-indigo-600 tracking-widest bg-indigo-50 px-2 py-0.5 rounded">Passo 02</span>
               <h2 className="text-2xl font-black text-slate-800 tracking-tight">Arquivos Base</h2>
             </header>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FileUpload label="Escopo" description=".xlsx" accept={{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx']}} file={excelFile} onFileSelect={setExcelFile} color="indigo" />
               <FileUpload label="Modelo" description=".docx" accept={{'application/vnd.openxmlformats-officedocument.wordprocessingml.document':['.docx']}} file={wordFile} onFileSelect={setWordFile} color="amber" />
+              <div className="relative">
+                <FileUpload
+                  label="Referência"
+                  description="PDF ou TXT · opcional"
+                  accept={{'application/pdf':['.pdf'],'text/plain':['.txt']}}
+                  file={refFile}
+                  onFileSelect={setRefFile}
+                  color="indigo"
+                />
+                {!refFile && (
+                  <span className="absolute top-2 right-2 text-[9px] font-black uppercase tracking-widest bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded">
+                    opcional
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex justify-between items-center mt-8">
               <button onClick={()=>setStep(1)} className="px-6 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-50 transition-all flex items-center gap-2"><ArrowLeft size={14}/> Voltar</button>
