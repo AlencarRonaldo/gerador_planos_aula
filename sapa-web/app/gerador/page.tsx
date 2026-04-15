@@ -14,7 +14,8 @@ import {
   Loader2,
   Download,
   Plus,
-  X
+  X,
+  Edit3
 } from 'lucide-react'
 import Link from 'next/link'
 import { FileUpload } from '../../components/file-upload'
@@ -25,11 +26,12 @@ import { saveAs } from 'file-saver'
 import { supabase } from '../../lib/supabase'
 
 export default function GeradorPage() {
-  // ── ESTADOS (Devem ficar no topo) ──────────────────────────────────────────
+  // ── ESTADOS ──────────────────────────────────────────────────────────────
   const [step, setStep] = useState(1)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isFinished, setIsFinished] = useState(false)
   const [zipBlob, setZipBlob] = useState<Blob | null>(null)
+  const [drafts, setDrafts] = useState<Record<number, any>>({}) // Rascunhos editáveis
   
   const [professor, setProfessor] = useState('')
   const [escola, setEscola] = useState('')
@@ -41,6 +43,7 @@ export default function GeradorPage() {
   
   const [excelFile, setExcelFile] = useState<File | null>(null)
   const [wordFile, setWordFile] = useState<File | null>(null)
+  const [refFile, setRefFile] = useState<File | null>(null)
 
   const [abas, setAbas] = useState<string[]>([])
   const [abaSel, setAbaSel] = useState('')
@@ -54,7 +57,6 @@ export default function GeradorPage() {
 
   // ── EFEITOS ────────────────────────────────────────────────────────────────
 
-  // Carregar dados do perfil se logado
   useEffect(() => {
     async function loadProfile() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -139,12 +141,52 @@ export default function GeradorPage() {
     }
   }, [excelFile, abaSel])
 
-  const handleGenerate = async () => {
+  // ── FUNÇÕES DE GERAÇÃO ─────────────────────────────────────────────────────
+
+  const handleGenerateDrafts = async () => {
     if (creditosAtuais < selectedWeeks.length) {
-      alert(`Saldo insuficiente. Você tem ${creditosAtuais} créditos, mas selecionou ${selectedWeeks.length} semanas.`)
+      alert(`Saldo insuficiente. Você precisa de ${selectedWeeks.length} créditos, mas possui ${creditosAtuais}.`)
       return
     }
 
+    setIsGenerating(true)
+    try {
+      const newDrafts: Record<number, any> = {}
+      for (const w of selectedWeeks) {
+        const weekLessons = allLessons.filter(l => l.semana === w && l.componente === compSel && l.bimestre === bimSel)
+        if (weekLessons.length > 0) {
+          const response = await fetch('/api/gerar', {
+            method: 'POST',
+            body: JSON.stringify({ lessons: weekLessons })
+          })
+          
+          if (!response.ok) throw new Error("Falha na API da IA")
+          const { content } = await response.json()
+
+          // Extrai seções no frontend para popular o editor
+          const parse = (tag: string, text: string) => {
+            const match = text.match(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`))
+            return match ? match[1].trim() : ""
+          }
+
+          newDrafts[w] = {
+            desenvolvimento: parse("DESENVOLVIMENTO", content) || content,
+            aee: parse("AEE", content),
+            exercicios: parse("EXERCICIOS", content)
+          }
+        }
+      }
+      setDrafts(newDrafts)
+      setStep(5) // Pula para a tela de revisão
+    } catch (e: any) {
+      console.error(e)
+      alert(e.message || "Erro na geração dos rascunhos.")
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const handleDownloadWords = async () => {
     setIsGenerating(true)
     const zip = new JSZip()
     const templateBuffer = await wordFile!.arrayBuffer()
@@ -154,62 +196,40 @@ export default function GeradorPage() {
       for (const w of selectedWeeks) {
         const weekLessons = allLessons.filter(l => l.semana === w && l.componente === compSel && l.bimestre === bimSel)
         if (weekLessons.length > 0) {
-          const response = await fetch('/api/gerar', {
-            method: 'POST',
-            body: JSON.stringify({ lessons: weekLessons })
-          })
+          const draft = drafts[w]
+          // Recombina o texto com as tags para a lib fillWordTemplate extrair internamente
+          const fullContent = `<DESENVOLVIMENTO>\n${draft.desenvolvimento}\n</DESENVOLVIMENTO>\n<AEE>\n${draft.aee}\n</AEE>\n<EXERCICIOS>\n${draft.exercicios}\n</EXERCICIOS>`
           
-          if (!response.ok) throw new Error("Falha na IA")
-          const { content } = await response.json()
-
           const objetivosStr = weekLessons.map((l, i) => `Aula ${i+1}: ${l.obj || l.objetivo}`).join('\n')
 
           const docBlob = await fillWordTemplate(templateBuffer, {
-            escola, 
-            professor, 
-            turma, 
-            componente: compSel, 
-            bimestre: bimSel, 
-            semana: w, 
-            tema: weekLessons[0].tema,
-            objetivos: objetivosStr,
-            natureza: weekLessons[0].natureza || 'Teórica/Prática',
-            desenvolvimento: content
+            escola, professor, turma, componente: compSel, bimestre: bimSel, semana: w, 
+            tema: weekLessons[0].tema, objetivos: objetivosStr, natureza: weekLessons[0].natureza || 'Teórica/Prática', 
+            desenvolvimento: fullContent
           })
           
           const filename = gerarNomeArquivo(turma, w, compSel)
           zip.file(filename, docBlob)
 
           if (user) {
-            const { error: rpcError } = await supabase.rpc('descontar_creditos', { 
-              user_id: user.id, 
-              quantidade: 1 
-            })
-
+            // Desconta crédito
+            const { error: rpcError } = await supabase.rpc('descontar_creditos', { user_id: user.id, quantidade: 1 })
             if (rpcError) throw new Error("Erro ao processar seus créditos.")
 
+            // Upload
             let publicUrl = ""
             const filePath = `${user.id}/${Date.now()}_${filename}`
-            const { data: uploadData, error: uploadError } = await supabase.storage
-              .from('planos')
-              .upload(filePath, docBlob)
+            const { error: uploadError } = await supabase.storage.from('planos').upload(filePath, docBlob)
 
             if (!uploadError) {
               const { data: urlData } = supabase.storage.from('planos').getPublicUrl(filePath)
               publicUrl = urlData.publicUrl
             }
 
+            // Histórico
             await supabase.from('planos_gerados').insert({
-              usuario_id: user.id,
-              professor,
-              escola,
-              turma,
-              componente: compSel,
-              bimestre: bimSel,
-              semana: w,
-              tema: weekLessons[0].tema,
-              arquivo_nome: filename,
-              arquivo_url: publicUrl
+              usuario_id: user.id, professor, escola, turma, componente: compSel, 
+              bimestre: bimSel, semana: w, tema: weekLessons[0].tema, arquivo_nome: filename, arquivo_url: publicUrl
             })
 
             setCreditosAtuais(prev => prev - 1)
@@ -217,10 +237,12 @@ export default function GeradorPage() {
         }
       }
       const finalZip = await zip.generateAsync({ type: 'blob' })
-      setZipBlob(finalZip); setIsFinished(true); saveAs(finalZip, `planos.zip`)
+      setZipBlob(finalZip)
+      setIsFinished(true)
+      saveAs(finalZip, `planos_revisados.zip`)
     } catch (e: any) { 
       console.error(e)
-      alert(e.message || "Erro na geração.") 
+      alert(e.message || "Erro na conversão para Word.") 
     } finally { 
       setIsGenerating(false) 
     }
@@ -238,12 +260,12 @@ export default function GeradorPage() {
         <div className="flex items-center gap-6">
           <Link href="/historico" className="text-[10px] font-black uppercase text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1.5 tracking-widest"><Layers size={14} /> Histórico</Link>
           <div className="flex gap-2 bg-slate-100 p-1.5 rounded-full">
-            {[1,2,3,4].map(i => <div key={i} className={`w-2 h-2 rounded-full ${step >= i ? 'bg-indigo-600' : 'bg-slate-300'}`} />)}
+            {[1,2,3,4,5].map(i => <div key={i} className={`w-2 h-2 rounded-full ${step >= i ? 'bg-indigo-600' : 'bg-slate-300'}`} />)}
           </div>
         </div>
       </nav>
 
-      <main className="max-w-2xl mx-auto px-4 pt-24">
+      <main className="max-w-3xl mx-auto px-4 pt-24">
         {step === 1 && (
           <div className="space-y-6 animate-in fade-in">
             <header className="mb-6">
@@ -339,14 +361,72 @@ export default function GeradorPage() {
         {step === 4 && (
           <div className="py-10 flex flex-col items-center animate-in zoom-in">
             <div className={`w-24 h-24 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-[32px] flex items-center justify-center text-white shadow-2xl shadow-indigo-200 mb-8 ${isGenerating?'animate-pulse':'rotate-6 animate-bounce'}`}><Sparkles size={36} /></div>
-            <h2 className="text-3xl font-black mb-2 text-slate-900 tracking-tight">{isFinished ? "Tudo Pronto!" : "Gerar Planos"}</h2>
-            <p className="text-slate-500 text-sm mb-10 max-w-sm font-medium leading-relaxed">{isFinished ? "Seus planos foram processados. Clique para baixar o pacote ZIP." : "Inicie o motor de inteligência artificial para criar seus documentos."}</p>
-            {isFinished ? (
-              <button onClick={()=>saveAs(zipBlob!, 'planos.zip')} className="btn-gradient from-emerald-600 to-teal-600 w-full max-w-xs py-4 text-xs font-black tracking-widest uppercase flex items-center justify-center gap-3"><Download size={18}/> Baixar ZIP Completo</button>
-            ) : (
-              <button onClick={handleGenerate} disabled={isGenerating} className="btn-gradient w-full max-w-xs py-4 text-xs font-black tracking-widest uppercase flex items-center justify-center gap-3">{isGenerating ? <Loader2 className="animate-spin" size={18} /> : "Iniciar Geração Agora"}</button>
-            )}
-            {!isGenerating && <button onClick={()=>setStep(3)} className="mt-8 text-[10px] font-black text-slate-400 hover:text-indigo-600 transition-colors uppercase tracking-widest">Revisar configurações</button>}
+            <h2 className="text-3xl font-black mb-2 text-slate-900 tracking-tight">Gerar Rascunhos</h2>
+            <p className="text-slate-500 text-sm mb-10 max-w-sm font-medium leading-relaxed text-center">A IA criará um rascunho de todas as aulas selecionadas. Você poderá revisá-las e alterá-las antes de gastar seus créditos.</p>
+            <button onClick={handleGenerateDrafts} disabled={isGenerating} className="btn-gradient w-full max-w-xs py-4 text-xs font-black tracking-widest uppercase flex items-center justify-center gap-3">
+              {isGenerating ? <Loader2 className="animate-spin" size={18} /> : "Escrever Rascunhos (Grátis)"}
+            </button>
+            {!isGenerating && <button onClick={()=>setStep(3)} className="mt-8 text-[10px] font-black text-slate-400 hover:text-indigo-600 transition-colors uppercase tracking-widest">Voltar</button>}
+          </div>
+        )}
+
+        {step === 5 && (
+          <div className="space-y-8 animate-in slide-in-from-right">
+            <header className="mb-6">
+              <span className="text-[10px] font-black uppercase text-indigo-600 tracking-widest bg-indigo-50 px-2 py-0.5 rounded">Passo 05</span>
+              <h2 className="text-2xl font-black text-slate-800 tracking-tight">Revisão e Edição</h2>
+              <p className="text-slate-500 text-sm mt-1">Ajuste os textos abaixo. Seus créditos só serão descontados ao exportar para Word.</p>
+            </header>
+
+            {selectedWeeks.map(w => (
+              <div key={w} className="premium-card p-6 space-y-6">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <Edit3 size={16} className="text-indigo-600" />
+                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Semana {w}</h3>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Desenvolvimento Didático</label>
+                  <textarea 
+                    className="w-full p-4 rounded-xl border-2 border-slate-100 text-sm outline-none focus:border-indigo-500 min-h-[250px] leading-relaxed text-slate-700 resize-y"
+                    value={drafts[w]?.desenvolvimento || ''}
+                    onChange={(e) => setDrafts(prev => ({ ...prev, [w]: { ...prev[w], desenvolvimento: e.target.value } }))}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Adaptação AEE</label>
+                    <textarea 
+                      className="w-full p-4 rounded-xl border-2 border-slate-100 text-sm outline-none focus:border-indigo-500 min-h-[150px] leading-relaxed text-slate-700 resize-y"
+                      value={drafts[w]?.aee || ''}
+                      onChange={(e) => setDrafts(prev => ({ ...prev, [w]: { ...prev[w], aee: e.target.value } }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Exercícios (Anexo)</label>
+                    <textarea 
+                      className="w-full p-4 rounded-xl border-2 border-slate-100 text-sm outline-none focus:border-indigo-500 min-h-[150px] leading-relaxed text-slate-700 resize-y"
+                      value={drafts[w]?.exercicios || ''}
+                      onChange={(e) => setDrafts(prev => ({ ...prev, [w]: { ...prev[w], exercicios: e.target.value } }))}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            <div className="flex justify-between items-center mt-10 pt-6 border-t border-slate-200">
+              <button onClick={()=>setStep(4)} className="px-6 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-50 transition-all flex items-center gap-2"><ArrowLeft size={14}/> Refazer IA</button>
+              
+              {isFinished ? (
+                <button onClick={()=>saveAs(zipBlob!, 'planos_revisados.zip')} className="btn-gradient from-emerald-600 to-teal-600 px-8 py-3 text-xs font-black tracking-widest uppercase flex items-center gap-2 shadow-lg shadow-emerald-200"><Download size={16}/> Baixar ZIP</button>
+              ) : (
+                <button onClick={handleDownloadWords} disabled={isGenerating} className="btn-gradient px-8 py-3 text-xs flex items-center gap-2 tracking-widest uppercase shadow-lg shadow-indigo-200">
+                  {isGenerating ? <Loader2 className="animate-spin" size={16} /> : <Download size={16} />} 
+                  {isGenerating ? "Processando..." : "Salvar Word & Descontar Créditos"}
+                </button>
+              )}
+            </div>
           </div>
         )}
       </main>
