@@ -190,44 +190,56 @@ def call_gemini(week_lessons, api_key):
     from google.genai import types
 
     client = genai.Client(api_key=api_key)
-    modelo = "gemini-2.5-flash"
+    modelo = "gemini-2.0-flash" # Atualizado para a versão mais recente estável
 
     lesson = week_lessons[0]
     qtd = lesson["qtd_aulas_semana"]
 
     aulas_desc = "\n".join(
-        f"  Aula {i+1}: {l['titulo_aula']}\n    Objetivo: {l['objetivo']}"
+        f"  Aula {i+1}: {l['titulo_aula']}\n    Objetivo: {l['objetivo']}\n    Habilidades: {l['habilidades_tecnicas']}"
         for i, l in enumerate(week_lessons)
     )
 
-    prompt = f"""Você é um professor experiente de Educação Profissional lecionando {lesson['componente']}.
+    prompt = f"""Você é um Coordenador Pedagógico e Professor Expert em Educação Profissional Técnica de Nível Médio. Sua tarefa é elaborar um roteiro de aula altamente DIDÁTICO e DETALHADO para o componente: {lesson['componente']}.
 
-DADOS DA SEMANA:
+REFERÊNCIA PEDAGÓGICA:
+- Base Nacional Comum Curricular (BNCC): Integre as competências gerais (como pensamento crítico e científico) e as habilidades específicas da área de Linguagens ou Ciências Exatas aplicadas ao contexto técnico.
+- Metodologias Ativas: Utilize estratégias como Aprendizagem Baseada em Problemas (PBL), Aprendizagem baseada em equipe e Estudo de Caso.
+
+RECURSOS DISPONÍVEIS (Integre-os no plano):
+- Computadores com acesso à internet e softwares da área.
+- Lousa e Marcadores.
+- Material Digital da Secretaria da Educação.
+- Televisão/Projetor para demonstrações.
+
+DADOS DO CONTEXTO:
 - Componente: {lesson['componente']}
 - Unidade Curricular: {lesson['unidade_curricular']}
 - Tema da Semana: {lesson['tema_semana']}
-- Competência Técnica: {lesson['competencia_tecnica'][:250]}
-- Competências Socioemocionais: {lesson['competencias_socioemocionais'][:150]}
-- Total de aulas: {qtd} (cada uma com 50 minutos)
+- Competência Técnica: {lesson['competencia_tecnica']}
+- Competências Socioemocionais: {lesson['competencias_socioemocionais']}
+- Total de aulas: {qtd} aulas de 50 minutos cada.
 
-AULAS DA SEMANA:
+AULAS PARA DESENVOLVER:
 {aulas_desc}
 
-TAREFA: Escreva o DESENVOLVIMENTO detalhado de CADA AULA da semana.
+---
+TAREFA: Escreva o plano de DESENVOLVIMENTO detalhado para CADA UMA das {qtd} aulas.
 
-Para cada aula use este formato exato:
+FORMATO OBRIGATÓRIO (Repita para cada aula):
 
 AULA [N] - [Título da Aula]
-Abertura (10 min): [Como motivar, contextualizar, conectar com conhecimentos anteriores. Seja específico.]
-Desenvolvimento ([x] min): [Descreva as atividades principais: explicação do conteúdo, demonstrações, exercícios práticos, discussões. Seja detalhado e específico para o contexto profissional.]
-Fechamento (10 min): [Síntese do conteúdo, verificação de aprendizagem, tarefa ou próximos passos.]
+Abertura (10 min): [Explique como será o acolhimento, a ativação de conhecimentos prévios e a contextualização do tema com o mundo do trabalho. Como você vai 'fisgar' a atenção do aluno?]
+Desenvolvimento (30 min): [Passo a passo detalhado da atividade principal. Inclua a explicação teórica (usando lousa/slides) e a atividade prática (uso de computadores/material digital). Descreva o papel do professor e a ação dos alunos.]
+Fechamento (10 min): [Momento de síntese, verificação da aprendizagem através de perguntas rápidas ou feedback, e conexão com a próxima aula.]
 
-REGRAS:
-- Escreva em português do Brasil, linguagem clara
-- Seja prático e específico para educação profissional
-- Não use markdown (sem **, sem #, sem bullets com -)
-- Separe cada aula com linha em branco
-- Escreva TODAS as {qtd} aulas completas"""
+REGRAS CRÍTICAS:
+1. Linguagem: Profissional, motivadora e clara.
+2. Formatação: NÃO use markdown (sem asteriscos, sem hashtags, sem hifens de lista). Use apenas texto plano formatado por parágrafos e quebras de linha.
+3. Especificidade: Evite termos genéricos como "o professor explica o conteúdo". Em vez disso, diga "O professor demonstra o comando SQL MERGE no projetor enquanto os alunos replicam no ambiente de banco de dados".
+4. BNCC: Mencione brevemente como a atividade desenvolve competências da BNCC (ex: investigação científica ou cultura digital).
+5. Complete as {qtd} aulas individualmente.
+"""
 
     response = client.models.generate_content(model=modelo, contents=prompt)
     return response.text
