@@ -378,6 +378,14 @@ export default function GeradorPage() {
             <div className={`w-24 h-24 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-[32px] flex items-center justify-center text-white shadow-2xl shadow-indigo-200 mb-8 ${isGenerating?'animate-pulse':'rotate-6 animate-bounce'}`}><Sparkles size={36} /></div>
             <h2 className="text-3xl font-black mb-2 text-slate-900 tracking-tight">Gerar Rascunhos</h2>
             <p className="text-slate-500 text-sm mb-10 max-w-sm font-medium leading-relaxed text-center">A IA criará um rascunho de todas as aulas selecionadas. Você poderá revisá-las e alterá-las antes de gastar seus créditos.</p>
+            {refFile && (
+              <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mb-6">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[11px] font-black text-emerald-700 uppercase tracking-widest">
+                  Referência ativa: {refFile.name}
+                </span>
+              </div>
+            )}
             <button onClick={handleGenerateDrafts} disabled={isGenerating} className="btn-gradient w-full max-w-xs py-4 text-xs font-black tracking-widest uppercase flex items-center justify-center gap-3">
               {isGenerating ? <Loader2 className="animate-spin" size={18} /> : "Escrever Rascunhos (Grátis)"}
             </button>
