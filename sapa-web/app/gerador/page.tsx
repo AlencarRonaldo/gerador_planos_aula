@@ -1,18 +1,20 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { 
-  ArrowRight, 
-  ArrowLeft, 
-  GraduationCap, 
-  BookOpen, 
-  PenTool, 
-  Sparkles, 
-  Calendar, 
+import {
+  ArrowRight,
+  ArrowLeft,
+  GraduationCap,
+  BookOpen,
+  PenTool,
+  Sparkles,
+  Calendar,
   Layers,
   CheckCircle,
   Loader2,
-  Download
+  Download,
+  Plus,
+  X
 } from 'lucide-react'
 import Link from 'next/link'
 import { FileUpload } from '../../components/file-upload'
@@ -23,6 +25,7 @@ import { saveAs } from 'file-saver'
 import { supabase } from '../../lib/supabase'
 
 export default function GeradorPage() {
+  // ── ESTADOS (Devem ficar no topo) ──────────────────────────────────────────
   const [step, setStep] = useState(1)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isFinished, setIsFinished] = useState(false)
@@ -31,6 +34,11 @@ export default function GeradorPage() {
   const [professor, setProfessor] = useState('')
   const [escola, setEscola] = useState('')
   const [turma, setTurma] = useState('')
+  const [escolasSalvas, setEscolasSalvas] = useState<string[]>([])
+  const [novaEscola, setNovaEscola] = useState('')
+  const [adicionandoEscola, setAdicionandoEscola] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
+  
   const [excelFile, setExcelFile] = useState<File | null>(null)
   const [wordFile, setWordFile] = useState<File | null>(null)
 
@@ -42,21 +50,55 @@ export default function GeradorPage() {
   const [bimSel, setBimSel] = useState<number>(1)
   const [allLessons, setAllLessons] = useState<any[]>([])
   const [selectedWeeks, setSelectedWeeks] = useState<number[]>([])
+  const [creditosAtuais, setCreditosAtuais] = useState<number>(0)
+
+  // ── EFEITOS ────────────────────────────────────────────────────────────────
 
   // Carregar dados do perfil se logado
   useEffect(() => {
     async function loadProfile() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        const { data: profile } = await supabase.from('perfis').select('*').eq('id', user.id).single()
+        setUserId(user.id)
+        const { data: profile } = await supabase.from('perfis').select('*').eq('id', user.id).maybeSingle()
         if (profile) {
           setProfessor(profile.nome_completo || '')
-          setEscola(profile.escola_padrao || '')
+          setCreditosAtuais(profile.creditos || 0)
+          const lista: string[] = profile.escolas || []
+          const padrao = profile.escola_padrao || ''
+          let listaFinal = [...lista]
+          if (padrao && !listaFinal.includes(padrao)) {
+            listaFinal = [padrao, ...listaFinal]
+          }
+          setEscolasSalvas(listaFinal)
+          if (padrao) setEscola(padrao)
+          else if (listaFinal.length > 0) setEscola(listaFinal[0])
         }
       }
     }
     loadProfile()
   }, [])
+
+  const salvarEscola = async (nome: string) => {
+    if (!nome.trim()) return
+    const novaLista = Array.from(new Set([...escolasSalvas, nome.trim()]))
+    setEscolasSalvas(novaLista)
+    setEscola(nome.trim())
+    if (userId) {
+      await supabase.from('perfis').update({ escolas: novaLista }).eq('id', userId)
+    }
+    setAdicionandoEscola(false)
+    setNovaEscola('')
+  }
+
+  const removerEscola = async (nome: string) => {
+    const novaLista = escolasSalvas.filter(e => e !== nome)
+    setEscolasSalvas(novaLista)
+    if (escola === nome) setEscola(novaLista[0] || '')
+    if (userId) {
+      await supabase.from('perfis').update({ escolas: novaLista }).eq('id', userId)
+    }
+  }
 
   useEffect(() => {
     if (excelFile) {
@@ -85,13 +127,24 @@ export default function GeradorPage() {
           const m = String(row[5] || "").length > 100 ? String(row[3] || "") : (String(row[5] || "") || String(row[3] || ""))
           if (m) { comps.add(m); lessons.push({ bimestre: b, semana: w, componente: m, titulo: row[12], obj: row[15], hab: row[13], tema: row[11] }) }
         })
-        setAllLessons(lessons); setComponentes(Array.from(comps).sort()); setBimestres(Array.from(bims).sort((a,b)=>a-b))
+        const sortedComps = Array.from(comps).sort()
+        const sortedBims = Array.from(bims).sort((a,b)=>a-b)
+        setAllLessons(lessons)
+        setComponentes(sortedComps)
+        setBimestres(sortedBims)
+        if (sortedComps.length > 0) setCompSel(sortedComps[0])
+        if (sortedBims.length > 0) setBimSel(sortedBims[0])
       }
       reader.readAsArrayBuffer(excelFile)
     }
   }, [excelFile, abaSel])
 
   const handleGenerate = async () => {
+    if (creditosAtuais < selectedWeeks.length) {
+      alert(`Saldo insuficiente. Você tem ${creditosAtuais} créditos, mas selecionou ${selectedWeeks.length} semanas.`)
+      return
+    }
+
     setIsGenerating(true)
     const zip = new JSZip()
     const templateBuffer = await wordFile!.arrayBuffer()
@@ -101,7 +154,6 @@ export default function GeradorPage() {
       for (const w of selectedWeeks) {
         const weekLessons = allLessons.filter(l => l.semana === w && l.componente === compSel && l.bimestre === bimSel)
         if (weekLessons.length > 0) {
-          // Chamada via API Route (Segurança)
           const response = await fetch('/api/gerar', {
             method: 'POST',
             body: JSON.stringify({ lessons: weekLessons })
@@ -128,8 +180,25 @@ export default function GeradorPage() {
           const filename = gerarNomeArquivo(turma, w, compSel)
           zip.file(filename, docBlob)
 
-          // Salvar Histórico no Supabase (Fase 1 do Roadmap)
           if (user) {
+            const { error: rpcError } = await supabase.rpc('descontar_creditos', { 
+              user_id: user.id, 
+              quantidade: 1 
+            })
+
+            if (rpcError) throw new Error("Erro ao processar seus créditos.")
+
+            let publicUrl = ""
+            const filePath = `${user.id}/${Date.now()}_${filename}`
+            const { data: uploadData, error: uploadError } = await supabase.storage
+              .from('planos')
+              .upload(filePath, docBlob)
+
+            if (!uploadError) {
+              const { data: urlData } = supabase.storage.from('planos').getPublicUrl(filePath)
+              publicUrl = urlData.publicUrl
+            }
+
             await supabase.from('planos_gerados').insert({
               usuario_id: user.id,
               professor,
@@ -139,37 +208,42 @@ export default function GeradorPage() {
               bimestre: bimSel,
               semana: w,
               tema: weekLessons[0].tema,
-              arquivo_nome: filename
+              arquivo_nome: filename,
+              arquivo_url: publicUrl
             })
+
+            setCreditosAtuais(prev => prev - 1)
           }
         }
       }
       const finalZip = await zip.generateAsync({ type: 'blob' })
       setZipBlob(finalZip); setIsFinished(true); saveAs(finalZip, `planos.zip`)
-    } catch (e) { 
+    } catch (e: any) { 
       console.error(e)
-      alert("Erro na geração. Verifique sua conexão e tente novamente.") 
+      alert(e.message || "Erro na geração.") 
     } finally { 
       setIsGenerating(false) 
     }
   }
 
-
   const currentWeeks = Array.from(new Set(allLessons.filter(l => l.bimestre === bimSel && l.componente === compSel).map(l => l.semana))).sort((a,b)=>a-b)
 
   return (
     <div className="min-h-screen pb-12">
-      <nav className="nav-blur px-6 py-3 mb-8 flex justify-between items-center shadow-sm">
-        <Link href="/" className="flex items-center gap-2">
+      <nav className="nav-blur px-6 py-3 mb-8 flex justify-between items-center shadow-sm bg-white/80 fixed top-0 w-full z-50">
+        <Link href="/" className="flex items-center gap-2 text-slate-900">
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white"><GraduationCap size={18} /></div>
-          <h1 className="text-base font-bold leading-none text-slate-900">SAPA <span className="text-indigo-600 text-[9px] block font-black uppercase">SaaS</span></h1>
+          <h1 className="text-base font-bold leading-none">SAPA <span className="text-indigo-600 text-[9px] block font-black uppercase tracking-tighter">SaaS</span></h1>
         </Link>
-        <div className="flex gap-2">
-          {[1,2,3,4].map(i => <div key={i} className={`w-2 h-2 rounded-full ${step >= i ? 'bg-indigo-600' : 'bg-slate-200'}`} />)}
+        <div className="flex items-center gap-6">
+          <Link href="/historico" className="text-[10px] font-black uppercase text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1.5 tracking-widest"><Layers size={14} /> Histórico</Link>
+          <div className="flex gap-2 bg-slate-100 p-1.5 rounded-full">
+            {[1,2,3,4].map(i => <div key={i} className={`w-2 h-2 rounded-full ${step >= i ? 'bg-indigo-600' : 'bg-slate-300'}`} />)}
+          </div>
         </div>
       </nav>
 
-      <main className="max-w-2xl mx-auto px-4">
+      <main className="max-w-2xl mx-auto px-4 pt-24">
         {step === 1 && (
           <div className="space-y-6 animate-in fade-in">
             <header className="mb-6">
@@ -178,7 +252,44 @@ export default function GeradorPage() {
             </header>
             <div className="premium-card grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
               <div className="space-y-1"><label className="text-[10px] font-black uppercase text-slate-400">Professor</label><input value={professor} onChange={e=>setProfessor(e.target.value)} className="w-full p-3 rounded-xl border-2 text-sm outline-none focus:border-indigo-500" placeholder="Nome completo" /></div>
-              <div className="space-y-1"><label className="text-[10px] font-black uppercase text-slate-400">Escola</label><input value={escola} onChange={e=>setEscola(e.target.value)} className="w-full p-3 rounded-xl border-2 text-sm outline-none focus:border-indigo-500" placeholder="Nome da instituição" /></div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-400">Escola</label>
+                {escolasSalvas.length > 0 && !adicionandoEscola ? (
+                  <div className="space-y-2">
+                    <select value={escola} onChange={e => setEscola(e.target.value)} className="w-full p-3 rounded-xl border-2 text-sm outline-none focus:border-indigo-500 bg-white">
+                      {escolasSalvas.map(e => <option key={e} value={e}>{e}</option>)}
+                    </select>
+                    <div className="flex flex-wrap gap-1.5">
+                      {escolasSalvas.map(e => (
+                        <span key={e} className={`flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg cursor-pointer transition-all ${escola === e ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'}`}>
+                          {e}
+                          <X size={10} className="hover:text-red-500 cursor-pointer" onClick={ev => { ev.stopPropagation(); removerEscola(e) }} />
+                        </span>
+                      ))}
+                      <button onClick={() => setAdicionandoEscola(true)} className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all">
+                        <Plus size={10} /> Nova
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      autoFocus={adicionandoEscola}
+                      value={adicionandoEscola ? novaEscola : escola}
+                      onChange={e => adicionandoEscola ? setNovaEscola(e.target.value) : setEscola(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter' && novaEscola.trim()) { salvarEscola(novaEscola.trim()) } }}
+                      className="flex-1 p-3 rounded-xl border-2 text-sm outline-none focus:border-indigo-500"
+                      placeholder="Nome da instituição"
+                    />
+                    {adicionandoEscola && (
+                      <>
+                        <button onClick={() => salvarEscola(novaEscola)} className="px-3 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all"><Plus size={14}/></button>
+                        <button onClick={() => { setAdicionandoEscola(false); setNovaEscola('') }} className="px-3 bg-slate-100 text-slate-500 rounded-xl text-xs font-bold hover:bg-slate-200 transition-all"><X size={14}/></button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
               <div className="md:col-span-2 space-y-1"><label className="text-[10px] font-black uppercase text-slate-400">Turma</label><input value={turma} onChange={e=>setTurma(e.target.value)} className="w-full p-3 rounded-xl border-2 text-sm outline-none focus:border-indigo-500" placeholder="Ex: 3º Ano B" /></div>
             </div>
             <div className="flex justify-end"><button onClick={()=>setStep(2)} disabled={!professor||!escola} className="btn-gradient px-8 py-2.5 text-xs flex items-center gap-2">Continuar <ArrowRight size={14}/></button></div>

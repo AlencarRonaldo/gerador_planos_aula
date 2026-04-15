@@ -26,6 +26,7 @@ O sistema está em fase de **Protótipo Funcional de Alta Fidelidade** (MVP - Mi
 - [x] **Abr/2026**: Correção da lógica de datas para semanas avançadas (Semana 8+).
 - [x] **Abr/2026**: Implementação do filtro por Bimestre e Natureza da Aula (Teórica/Prática).
 - [x] **Abr/2026**: Mascaramento total da API Key para futura hospedagem segura.
+- [x] **Abr/2026**: Fase 2 completa — Auth, middleware, perfil e dashboard dinâmico.
 
 ---
 
@@ -33,17 +34,22 @@ O sistema está em fase de **Protótipo Funcional de Alta Fidelidade** (MVP - Mi
 
 ### Fase 1: Persistência (Banco de Dados)
 - [x] Conectar o Streamlit ao **Supabase (PostgreSQL)**.
-- [ ] Criar tabela `planos_gerados` para salvar o histórico de cada geração.
-- [ ] Salvar o arquivo `.docx` final em um Storage (Nuvem) em vez de apenas download local.
+- [x] Criar tabela `planos_gerados` para salvar o histórico de cada geração.
+- [x] Salvar o arquivo `.docx` final em um Storage (Nuvem) em vez de apenas download local.
 
 ### Fase 2: Gestão de Usuários (Acesso)
-- [ ] Implementar **Login/Senha** (Supabase Auth).
-- [ ] Criar Perfil do Professor (Foto, Escola padrão, Matérias favoritas).
+- [x] Implementar **Login/Senha** (Supabase Auth).
+- [x] Proteção de rotas via middleware (/, /gerador, /historico, /perfil → redirect /login).
+- [x] Rota `/auth/callback` para confirmação de e-mail pós-cadastro.
+- [x] Criar Perfil do Professor (Escola padrão, Matéria favorita, logout).
+- [x] Dashboard dinâmico (nome real, iniciais e escola do perfil).
 
 ### Fase 3: Monetização (Pagamento)
-- [ ] Integrar com **Stripe** ou **Mercado Pago**.
-- [ ] Criar lógica de **Créditos**: "O professor paga R$ X para gerar Y planos" ou "Assinatura Mensal".
-- [ ] Criar Dashboard de Assinante (Ver faturas, Status do plano).
+- [x] Integrar com **Asaas** (Pagamentos PIX, Boleto, Cartão).
+- [x] Criar lógica de **Créditos**: "O professor paga R$ X para gerar Y planos".
+- [x] Criar lógica de **Assinatura Mensal** (Básico, Pro, Premium).
+- [x] Criar Dashboard de Assinante (Ver créditos, Status do plano).
+- [ ] Configurar Webhook do Asaas no painel do Asaas (URL: https://seu-dominio/api/asaas/webhook)
 
 ### Fase 4: Expansão Tecnológica
 - [ ] Migrar Frontend para **Next.js** (para maior performance e SEO).

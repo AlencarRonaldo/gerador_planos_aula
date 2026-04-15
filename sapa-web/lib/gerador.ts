@@ -1,85 +1,175 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import PizZip from "pizzip";
 
-/**
- * Chama a API do Gemini com tratamento de erro e modelo estável.
- */
-export async function callGemini(lessons: any[], apiKey: string) {
-  const finalKey = apiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
-  
-  if (!finalKey) {
-    throw new Error("Chave de API do Gemini não configurada.");
-  }
+// --- Helpers XML -----------------------------------------------------------
 
-  const genAI = new GoogleGenerativeAI(finalKey);
-  // gemini-1.5-flash é a versão estável recomendada
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+function escXml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
 
-  const context = lessons.map((l, i) => 
-    `Aula ${i+1}: Tema="${l.titulo_aula || l.titulo}", Objetivo="${l.objetivo || l.obj}", Habilidades="${l.habilidades_tecnicas || l.hab}"`
-  ).join("\n");
-
-  const prompt = `
-    Você é um assistente pedagógico especializado. Com base nas aulas abaixo de uma mesma semana:
-    ${context}
-
-    Crie um plano de aula detalhado com as seguintes seções (USE APENAS TEXTO PLANO, SEM MARKDOWN, SEM ASTERISCOS):
-
-    ABERTURA: (Contextualização e motivação inicial)
-    DESENVOLVIMENTO: (Passo a passo detalhado das atividades da semana)
-    FECHAMENTO: (Sintese e verificação)
-
-    Foque em metodologias ativas e clareza para o professor.
-  `;
-
-  try {
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    // Limpeza básica para garantir texto plano
-    return text.replace(/\*/g, '').trim();
-  } catch (error: any) {
-    console.error("Erro Gemini:", error);
-    throw new Error(`IA Indisponível: ${error.message}`);
-  }
+/** Extrai todo o texto visível de um fragmento XML Word */
+function getParaText(para: string): string {
+  const matches = Array.from(para.matchAll(/<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>/g));
+  return matches.map(m => m[1]).join("");
 }
 
 /**
- * Motor de manipulação de Word (Replica a lógica do Python em JS).
- * Busca strings específicas no XML do Word e injeta os valores.
+ * Normaliza os parágrafos que contêm os nossos labels:
+ * une todos os <w:r>...<w:t> em um único run, preservando o <w:pPr>.
+ * Isso resolve o problema do Word que quebra texto em múltiplas tags.
  */
-export async function fillWordTemplate(templateBuffer: ArrayBuffer, data: any) {
-  const zip = new PizZip(templateBuffer);
-  let xmlContent = zip.file("word/document.xml")?.asText();
+function normalizeParagraphs(xml: string, targets: string[]): string {
+  return xml.replace(/<w:p\b[^>]*>[\s\S]*?<\/w:p>/g, para => {
+    const fullText = getParaText(para);
+    if (!targets.some(t => fullText.includes(t))) return para;
 
-  if (!xmlContent) throw new Error("Documento Word inválido.");
+    const openTag = para.match(/<w:p\b[^>]*/)?.[0] ?? "<w:p";
+    const pPr = para.match(/<w:pPr>[\s\S]*?<\/w:pPr>/)?.[0] ?? "";
+    const rPr = para.match(/<w:rPr>[\s\S]*?<\/w:rPr>/)?.[0] ?? "";
 
-  // Função para substituir texto preservando a estrutura XML básica do Word
-  // O Word costuma quebrar palavras com tags <w:t>, essa é uma versão simplificada
-  const replaceText = (xml: string, search: string, value: string) => {
-    // Regex para encontrar o texto mesmo que o Word tenha quebrado as tags
-    // Nota: Esta é uma solução de compromisso. Para templates complexos, 
-    // recomenda-se o uso de bibliotecas de alto nível ou tags {tag}.
-    return xml.split(search).join(`${search}${value}`);
+    const safeText = escXml(fullText);
+    const normalRun = `<w:r>${rPr}<w:t xml:space="preserve">${safeText}</w:t></w:r>`;
+    return `${openTag}>${pPr}${normalRun}</w:p>`;
+  });
+}
+
+/**
+ * Substitui o texto do parágrafo que contém `label`.
+ * Mantém o prefixo até (e incluindo) ": " e adiciona o novo valor.
+ * Equivalente ao update_field(..., value_in_next_para=False) do Python.
+ */
+function replaceInlinePara(xml: string, label: string, value: string): string {
+  return xml.replace(/<w:p\b[^>]*>[\s\S]*?<\/w:p>/g, para => {
+    const fullText = getParaText(para);
+    if (!fullText.includes(label)) return para;
+
+    const colonIdx = fullText.indexOf(": ", fullText.indexOf(label));
+    const prefix = colonIdx >= 0 ? fullText.slice(0, colonIdx + 2) : label;
+    const newText = escXml(prefix + value);
+
+    return para.replace(
+      /<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>/,
+      `<w:t xml:space="preserve">${newText}</w:t>`
+    );
+  });
+}
+
+/**
+ * Substitui o texto do parágrafo SEGUINTE ao que contém `label`.
+ * Equivalente ao update_field(..., value_in_next_para=True) do Python.
+ */
+function replaceNextPara(xml: string, label: string, value: string): string {
+  // Captura pares de parágrafos consecutivos
+  return xml.replace(
+    /(<w:p\b[^>]*>[\s\S]*?<\/w:p>)(\s*)(<w:p\b[^>]*>[\s\S]*?<\/w:p>)/g,
+    (match, p1, ws, p2) => {
+      if (!getParaText(p1).includes(label)) return match;
+
+      const openTag = p2.match(/<w:p\b[^>]*/)?.[0] ?? "<w:p";
+      const pPr = p2.match(/<w:pPr>[\s\S]*?<\/w:pPr>/)?.[0] ?? "";
+      const rPr = p2.match(/<w:rPr>[\s\S]*?<\/w:rPr>/)?.[0] ?? "";
+      const newP2 = `${openTag}>${pPr}<w:r>${rPr}<w:t xml:space="preserve">${escXml(value)}</w:t></w:r></w:p>`;
+      return p1 + ws + newP2;
+    }
+  );
+}
+
+/**
+ * Adiciona parágrafos no final da célula que contém um label específico.
+ */
+function addToCell(xml: string, label: string, texto: string): string {
+  if (!texto) return xml;
+  return xml.replace(/<w:tc\b[^>]*>[\s\S]*?<\/w:tc>/g, cell => {
+    if (!getParaText(cell).includes(label)) return cell;
+
+    const linhas = texto.trim().split("\n");
+    const novosParagrafos = linhas
+      .map(linha => {
+        const safe = escXml(linha.trim());
+        return `<w:p><w:r><w:t xml:space="preserve">${safe}</w:t></w:r></w:p>`;
+      })
+      .join("");
+
+    return cell.replace("</w:tc>", novosParagrafos + "</w:tc>");
+  });
+}
+
+function extrairSecoes(texto: string) {
+  const parse = (tag: string) => {
+    const match = texto.match(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`));
+    return match ? match[1].trim() : "";
   };
+  const desenv = parse("DESENVOLVIMENTO");
+  return {
+    desenvolvimento: desenv || texto, // Fallback se não houver tags
+    aee: parse("AEE"),
+    exercicios: parse("EXERCICIOS")
+  };
+}
 
-  // Mapeamento de campos igual ao Python
-  const fields = [
-    { search: "ESCOLA: ", val: data.escola },
-    { search: "PROFESSOR(A): ", val: data.professor },
-    { search: "COMPONENTE CURRICULAR: ", val: data.componente },
-    { search: "ANO/SÉRIE: ", val: data.turma },
-    { search: "BIMESTRE: ", val: String(data.bimestre) },
-    { search: "AULA NO ES: ", val: `Semana ${data.semana} (${data.natureza || 'Teórica/Prática'})` },
-    { search: "APRENDIZAGEM ESSENCIAL:", val: `\n${data.tema || ''}` },
-    { search: "OBJETIVO DA AULA:", val: `\n${data.objetivos || ''}` },
-    { search: "DESENVOLVIMENTO", val: `\n\n${data.desenvolvimento || ''}` }
+// --- Função principal -------------------------------------------------------
+
+export async function fillWordTemplate(templateBuffer: ArrayBuffer, data: {
+  escola: string;
+  professor: string;
+  turma: string;
+  componente: string;
+  bimestre: number;
+  semana: number;
+  tema: string;
+  objetivos: string;
+  natureza: string;
+  desenvolvimento: string; // Agora pode vir com tags ou texto puro
+}) {
+  const zip = new PizZip(templateBuffer);
+  let xml = zip.file("word/document.xml")?.asText();
+  if (!xml) throw new Error("Documento Word inválido.");
+
+  const secoes = extrairSecoes(data.desenvolvimento);
+
+  const TARGETS = [
+    "ESCOLA", "PROFESSOR", "COMPONENTE", "ANO/S", "BIMESTRE",
+    "AULA NO", "APRENDIZAGEM", "HABILIDADE", "CONHECIMENTOS",
+    "QUANT.", "OBJETIVO", "DATA DE", "Desenvolvimento:", "ADAPTAÇÃO AEE:"
   ];
 
-  fields.forEach(f => {
-    if (f.val) xmlContent = replaceText(xmlContent!, f.search, f.val);
-  });
+  // 1. Normalizar parágrafos
+  xml = normalizeParagraphs(xml, TARGETS);
 
-  zip.file("word/document.xml", xmlContent);
+  // 2. Campos inline
+  const hoje = new Date().toLocaleDateString("pt-BR");
+  const aulaInfo = `Semana ${data.semana} (${data.natureza || "Teórica/Prática"})`;
+  const conhecPrevios = `Conteúdos anteriores de ${data.componente}. Unidade: ${data.tema || ""}`;
+
+  xml = replaceInlinePara(xml, "ESCOLA: ",                  data.escola);
+  xml = replaceInlinePara(xml, "PROFESSOR(A): ",            data.professor);
+  xml = replaceInlinePara(xml, "COMPONENTE CURRICULAR: ",   data.componente);
+  xml = replaceInlinePara(xml, "ANO/S",                     data.turma);
+  xml = replaceInlinePara(xml, "BIMESTRE: ",                String(data.bimestre));
+  xml = replaceInlinePara(xml, "AULA NO ES: ",              aulaInfo);
+  xml = replaceInlinePara(xml, "QUANT. DE AULAS PREVISTAS: ", "4");
+  xml = replaceInlinePara(xml, "DATA DE ELABORA",           hoje);
+
+  // 3. Campos próximos parágrafos
+  xml = replaceNextPara(xml, "APRENDIZAGEM ESSENCIAL:", data.tema);
+  xml = replaceNextPara(xml, "HABILIDADE RELACIONADA:",  data.objetivos);
+  xml = replaceNextPara(xml, "CONHECIMENTOS PR",         conhecPrevios);
+  xml = replaceNextPara(xml, "OBJETIVO DA AULA:",        data.objetivos);
+
+  // 4. Desenvolvimento e AEE
+  xml = addToCell(xml, "Desenvolvimento:", secoes.desenvolvimento);
+  xml = addToCell(xml, "ADAPTAÇÃO AEE:", secoes.aee);
+
+  // 5. Exercícios como Anexo (Se houver)
+  if (secoes.exercicios) {
+    const anexoXml = `
+      <w:p><w:r><w:br w:type="page"/></w:r></w:p>
+      <w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t>ANEXO: LISTA DE EXERCÍCIOS - SEMANA ${data.semana}</w:t></w:r></w:p>
+      ${secoes.exercicios.split("\n").map(l => `<w:p><w:r><w:t xml:space="preserve">${escXml(l.trim())}</w:t></w:r></w:p>`).join("")}
+    `;
+    xml = xml.replace("</w:body>", `${anexoXml}</w:body>`);
+  }
+
+  zip.file("word/document.xml", xml);
 
   return zip.generate({
     type: "blob",
@@ -88,6 +178,6 @@ export async function fillWordTemplate(templateBuffer: ArrayBuffer, data: any) {
 }
 
 export function gerarNomeArquivo(anoSerie: string, weekNum: number, componente: string) {
-  const safeComp = componente.substring(0, 30).replace(/[/\\?%*:|"<>]/g, '-');
-  return `${anoSerie} - Sem${String(weekNum).padStart(2, '0')} - Plano-de-Aula - ${safeComp}.docx`;
+  const safeComp = componente.substring(0, 30).replace(/[/\\?%*:|"<>]/g, "-");
+  return `${anoSerie} - Sem${String(weekNum).padStart(2, "0")} - Plano-de-Aula - ${safeComp}.docx`;
 }

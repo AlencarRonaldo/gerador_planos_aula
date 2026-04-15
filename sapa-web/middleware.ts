@@ -57,9 +57,10 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // Se o usuário não está logado e tenta acessar páginas restritas
-  if (!user && (request.nextUrl.pathname === '/' || request.nextUrl.pathname.startsWith('/gerador'))) {
+  if (!user && (request.nextUrl.pathname === '/' || request.nextUrl.pathname.startsWith('/gerador') || request.nextUrl.pathname.startsWith('/historico') || request.nextUrl.pathname.startsWith('/perfil') || request.nextUrl.pathname.startsWith('/planos') || request.nextUrl.pathname.startsWith('/admin'))) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
+
 
   // Se o usuário já está logado e tenta ir para o login
   if (user && request.nextUrl.pathname === '/login') {
@@ -70,5 +71,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/gerador/:path*', '/login'],
+  matcher: ['/', '/gerador/:path*', '/historico/:path*', '/perfil/:path*', '/login/:path*', '/planos/:path*', '/admin/:path*'],
 }

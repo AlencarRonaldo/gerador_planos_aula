@@ -2,53 +2,256 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 1rem;
-  }
+/* ─── Design Tokens ──────────────────────────────────────────── */
+:root {
+  --cream: #FAF8F3;
+  --cream-dark: #F2EEE6;
+  --stone: #E8E0D4;
+  --terra: #C4622D;
+  --terra-light: #E07A4A;
+  --terra-dark: #9C4A1F;
+  --bark: #3D2B1F;
+  --graphite: #1C1917;
+  --muted: #8C7B70;
+  --muted-light: #B5A89A;
+  --sage: #5A7A5A;
+  --sage-light: #7EA87E;
+  --gold: #C89B3C;
+  --radius-card: 20px;
+  --radius-sm: 10px;
+  --shadow-card: 0 2px 16px -2px rgba(60,35,20,0.10);
+  --shadow-hover: 0 12px 32px -6px rgba(60,35,20,0.15);
 }
+
+/* ─── Base ───────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
-  @apply bg-[#F8FAFC] text-slate-900 antialiased;
-  /* Textura de papel de seda sutil */
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.05) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.05) 0px, transparent 50%);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background-color: var(--cream);
+  color: var(--graphite);
+  -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(ellipse at 0% 0%, rgba(196,98,45,0.04) 0px, transparent 60%),
+    radial-gradient(ellipse at 100% 100%, rgba(196,98,45,0.03) 0px, transparent 55%);
+  min-height: 100vh;
 }
 
+/* ─── Typography Helpers ─────────────────────────────────────── */
+.font-display {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* ─── Component Layer ────────────────────────────────────────── */
 @layer components {
-  .premium-card {
-    @apply bg-white border border-slate-200/60 rounded-[24px] shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] transition-all duration-300;
-  }
-  
-  .premium-card:hover {
-    @apply shadow-[0_20px_25px_-5px_rgba(0,0,0,0.05),0_10px_10px_-5px_rgba(0,0,0,0.02)] -translate-y-1 border-indigo-100;
+
+  /* ── Nav ── */
+  .sapa-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(250, 248, 243, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--stone);
   }
 
-  .nav-blur {
-    @apply sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/50;
+  /* ── Cards ── */
+  .sapa-card {
+    background: #fff;
+    border: 1px solid var(--stone);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+  }
+  .sapa-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+    border-color: rgba(196, 98, 45, 0.2);
   }
 
-  .btn-gradient {
-    @apply bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold rounded-2xl shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:scale-[1.02] active:scale-[0.98] transition-all;
+  /* ── Hero Card (dark) ── */
+  .sapa-card-dark {
+    background: var(--bark);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    color: #fff;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+  }
+  .sapa-card-dark:hover {
+    box-shadow: 0 20px 40px -8px rgba(60,35,20,0.35);
+    transform: translateY(-2px);
+  }
+
+  /* ── Primary Button ── */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: var(--terra);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.01em;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 18px -4px rgba(196,98,45,0.5);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+  }
+  .btn-primary:hover {
+    background: var(--terra-dark);
+    box-shadow: 0 6px 24px -4px rgba(196,98,45,0.6);
+    transform: translateY(-1px);
+  }
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+
+  /* ── Ghost Button ── */
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    background: transparent;
+    color: var(--terra);
+    font-weight: 600;
+    font-size: 13px;
+    border: 1.5px solid rgba(196,98,45,0.3);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .btn-ghost:hover {
+    background: rgba(196,98,45,0.06);
+    border-color: var(--terra);
+  }
+
+  /* ── Badge ── */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: 999px;
+  }
+  .badge-terra {
+    background: rgba(196,98,45,0.12);
+    color: var(--terra-dark);
+  }
+  .badge-sage {
+    background: rgba(90,122,90,0.12);
+    color: var(--sage);
+  }
+  .badge-gold {
+    background: rgba(200,155,60,0.14);
+    color: #9A6E1A;
+  }
+
+  /* ── Progress Bar ── */
+  .progress-track {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--terra-light), var(--gold));
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ── Empty State Illustration ── */
+  .empty-eye {
+    width: 56px;
+    height: 56px;
+    background: var(--cream-dark);
+    border-radius: 16px;
+    border: 1.5px dashed var(--stone);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted-light);
+  }
+
+  /* ── Divider ── */
+  .sapa-divider {
+    border: none;
+    border-top: 1px solid var(--stone);
+  }
+
+  /* ── Stat Number ── */
+  .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    line-height: 1;
+    color: #fff;
+  }
+
+  /* ── Nav Pill ── */
+  .nav-pill-active {
+    background: #fff;
+    color: var(--graphite);
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    font-weight: 700;
+  }
+  .nav-pill {
+    color: var(--muted);
+    font-weight: 500;
+    border-radius: 8px;
+    transition: color 0.2s, background 0.2s;
+  }
+  .nav-pill:hover {
+    color: var(--graphite);
+    background: rgba(60,35,20,0.05);
+  }
+
+  /* ── Input ── */
+  .sapa-input {
+    background: var(--cream-dark);
+    border: 1.5px solid var(--stone);
+    border-radius: 999px;
+    padding: 8px 18px 8px 36px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--graphite);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+  .sapa-input:focus {
+    border-color: var(--terra);
+    box-shadow: 0 0 0 3px rgba(196,98,45,0.12);
+  }
+  .sapa-input::placeholder {
+    color: var(--muted-light);
   }
 }
+
+/* ─── Animations ─────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulseOrb {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50%       { transform: scale(1.15); opacity: 0.5; }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.5s cubic-bezier(.4,0,.2,1) both;
+}
+.delay-1 { animation-delay: 0.08s; }
+.delay-2 { animation-delay: 0.16s; }
+.delay-3 { animation-delay: 0.24s; }
+.delay-4 { animation-delay: 0.32s; }
+.delay-5 { animation-delay: 0.40s; }
