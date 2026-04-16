@@ -28,6 +28,8 @@ O painel atual tem três problemas críticos:
 3. Stats (2 cards em grid)
 4. Histórico recente
 
+**Removido intencionalmente:** os dois cards de dicas ("Dica de Produtividade" e "Suporte ao Template") e o banner CTA escuro no final da página são eliminados. O banner de boas-vindas já cumpre o papel de CTA principal com o botão "Novo Plano".
+
 ### 2.3 Banner de Boas-Vindas (substitui card escuro + header separado)
 Card escuro `#3D2B1F` unificado que contém:
 - Saudação dinâmica (Bom dia/Boa tarde/Boa noite + primeiro nome)
@@ -64,12 +66,12 @@ Arquivos Base
 - Altura da barra: 5px, border-radius 3px
 
 ### 2.7 Cards de Upload de Arquivo (Step 2 do gerador)
-Três cards com estado visual:
-- **Padrão:** borda dashed `#E8E0D4`
-- **Enviado:** borda solid `#C4622D`, fundo `#FEF0E8`, badge `✓ ok`
-- **Hover:** borda `#C4622D`, fundo `#FEF0E8`
+O componente `sapa-web/components/file-upload.tsx` **já implementa todos os estados visuais** (padrão dashed, enviado com check + cor sólida, drag active). Nenhuma mudança no componente é necessária.
 
-Dica contextual abaixo dos cards explicando brevemente cada arquivo.
+A única adição é uma **dica contextual** em `gerador/page.tsx` — um `<div>` abaixo do grid de uploads com texto explicativo para cada arquivo:
+- **Escopo:** planilha com componentes e semanas
+- **Modelo:** seu .docx com o layout da escola
+- **Referência:** ementa ou apostila (opcional)
 
 ---
 
@@ -91,6 +93,13 @@ Dica contextual abaixo dos cards explicando brevemente cada arquivo.
 ## 4. Lógica Dinâmica Crítica
 
 ### Plano do usuário (painel `/`)
+
+> **Atenção:** a query do perfil em `page.tsx` (linha 17) deve incluir `assinatura_ativa` no `select()`:
+> ```typescript
+> .select('nome_completo, escola_padrao, creditos, assinatura_ativa')
+> ```
+> Sem esse campo, `isFull` será sempre `false` e o badge PLANO FULL nunca aparecerá.
+
 ```typescript
 const isFull = profile?.assinatura_ativa === true
 const creditos = profile?.creditos ?? 0
