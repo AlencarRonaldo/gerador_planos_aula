@@ -156,7 +156,7 @@ export default function PlanosPage() {
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-3 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2 text-graphite">
             <div className="w-8 h-8 bg-terra rounded-lg flex items-center justify-center text-white"><Sparkles size={18} /></div>
-            <h1 className="text-sm font-black leading-none uppercase tracking-tighter">SAPA <span className="text-terra text-[9px] block">SaaS</span></h1>
+            <h1 className="text-sm font-black leading-none uppercase tracking-tighter">PlanoAi <span className="text-terra text-[9px] block">Inteligência Artificial</span></h1>
           </Link>
           <Link href="/" className="flex items-center gap-2 text-terra font-black text-[10px] uppercase tracking-widest">
             <ArrowLeft size={16} strokeWidth={3} /> Voltar

@@ -2,13 +2,13 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'SAPA — Planejamento que Inspira',
-  description: 'Sistema de Apoio Pedagógico Inteligente para Professores',
+  title: 'PlanoAi — Inteligência Artificial para Professores',
+  description: 'Crie planos de aula completos com inteligência artificial',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'SAPA',
+    title: 'PlanoAi',
   },
 }
 

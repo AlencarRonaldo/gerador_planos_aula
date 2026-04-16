@@ -66,7 +66,7 @@ export default async function Home() {
                 <BookOpen size={18} strokeWidth={2.5} />
               </div>
               <span className="font-display text-xl md:text-2xl font-black text-[#1C1917] tracking-tight hidden sm:block">
-                SAPA
+                PlanoAi
               </span>
             </div>
             <div className="flex items-center gap-1 bg-[#F2EEE6] p-1 rounded-xl border border-[#E8E0D4]">
@@ -220,7 +220,7 @@ export default async function Home() {
       {/* ── Footer ── */}
       <footer className="border-t border-[#E8E0D4] py-8 bg-white mt-12">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-[11px] font-bold text-[#8C7B70] uppercase tracking-widest">© 2026 SAPA. Todos os direitos reservados.</p>
+          <p className="text-[11px] font-bold text-[#8C7B70] uppercase tracking-widest">© 2026 PlanoAi. Todos os direitos reservados.</p>
           <div className="flex gap-8">
             {['Termos', 'Privacidade', 'Suporte'].map(item => (
               <Link key={item} href="#" className="text-[11px] font-black text-[#8C7B70] uppercase tracking-[0.15em] hover:text-[#C4622D] transition-colors">

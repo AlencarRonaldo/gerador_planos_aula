@@ -87,7 +87,7 @@ export default function AdminDashboardPage() {
           <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center">
             <ShieldCheck size={18} />
           </div>
-          <h1 className="text-sm font-black uppercase tracking-widest">SAPA Intelligence <span className="text-indigo-400">Admin</span></h1>
+          <h1 className="text-sm font-black uppercase tracking-widest">PlanoAi <span className="text-indigo-400">Admin</span></h1>
         </div>
         <div className="flex gap-6 items-center">
           <Link href="/admin/usuarios" className="text-[10px] font-black uppercase tracking-widest hover:text-indigo-400 transition-colors">Usuários</Link>
