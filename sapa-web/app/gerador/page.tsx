@@ -55,6 +55,7 @@ export default function GeradorPage() {
   const [selectedWeeks, setSelectedWeeks] = useState<number[]>([])
   const [creditosAtuais, setCreditosAtuais] = useState<number>(0)
   const [isFullPlan, setIsFullPlan] = useState(false)
+  const [profileData, setProfileData] = useState<any>(null)
 
   // ── EFEITOS ────────────────────────────────────────────────────────────────
 
@@ -65,6 +66,7 @@ export default function GeradorPage() {
         setUserId(user.id)
         const { data: profile } = await supabase.from('perfis').select('*').eq('id', user.id).maybeSingle()
         if (profile) {
+          setProfileData(profile)
           setProfessor(profile.nome_completo || '')
           setCreditosAtuais(profile.creditos || 0)
           setIsFullPlan(profile.assinatura_ativa === true)
@@ -144,7 +146,14 @@ export default function GeradorPage() {
   }, [excelFile, abaSel])
 
   const handleGenerateDrafts = async () => {
-    if (!isFullPlan && creditosAtuais < selectedWeeks.length) {
+    // Verifica se usuário free precisa contratar
+    if (!isFullPlan && profileData && profileData.plano_inicial_usado) {
+      alert(`Você usou seus 3 planos gratuitos. Assine um plano para continuar!`)
+      window.location.href = '/planos'
+      return
+    }
+
+    if (!isFullPlan && creditosAtuais < selectedWeeks.length && !profileData?.plano_inicial_usado) {
       alert(`Saldo insuficiente. Você precisa de ${selectedWeeks.length} créditos, mas possui ${creditosAtuais}.`)
       return
     }
@@ -241,8 +250,14 @@ export default function GeradorPage() {
 
           if (user) {
             if (!isFullPlan) {
-              await supabase.rpc('descontar_creditos', { p_user_id: user.id, p_quantidade: 1 })
-              setCreditosAtuais(prev => prev - 1)
+              // Marca como usado se for o plano inicial free
+              if (profileData && !profileData.plano_inicial_usado && creditosAtuais > 0) {
+                await supabase.from('perfis').update({ plano_inicial_usado: true }).eq('id', user.id)
+                setProfileData({ ...profileData, plano_inicial_usado: true })
+              } else if (creditosAtuais > 0) {
+                await supabase.rpc('descontar_creditos', { p_user_id: user.id, p_quantidade: 1 })
+                setCreditosAtuais(prev => prev - 1)
+              }
             }
             const filePath = `${user.id}/${Date.now()}_${filename}`
             const { error: uploadError } = await supabase.storage.from('planos').upload(filePath, docBlob)

@@ -25,6 +25,9 @@ ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS assinatura_ativa boolean DEFA
 ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS asaas_customer_id text;
 ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS asaas_subscription_id text;
 ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS data_expiracao   timestamptz;
+ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS planos_usados_mes   integer DEFAULT 0;
+ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS plano_inicial_usado boolean DEFAULT false;
+ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS mes_verificado    integer DEFAULT 0;
 
 -- Trigger: cria perfil automaticamente ao cadastrar novo usuário
 CREATE OR REPLACE FUNCTION public.handle_new_user()
