@@ -54,6 +54,7 @@ export default function GeradorPage() {
   const [allLessons, setAllLessons] = useState<any[]>([])
   const [selectedWeeks, setSelectedWeeks] = useState<number[]>([])
   const [creditosAtuais, setCreditosAtuais] = useState<number>(0)
+  const [isFullPlan, setIsFullPlan] = useState(false)
 
   // ── EFEITOS ────────────────────────────────────────────────────────────────
 
@@ -66,6 +67,7 @@ export default function GeradorPage() {
         if (profile) {
           setProfessor(profile.nome_completo || '')
           setCreditosAtuais(profile.creditos || 0)
+          setIsFullPlan(profile.assinatura_ativa === true)
           const lista: string[] = profile.escolas || []
           const padrao = profile.escola_padrao || ''
           let listaFinal = [...lista]
@@ -142,7 +144,7 @@ export default function GeradorPage() {
   }, [excelFile, abaSel])
 
   const handleGenerateDrafts = async () => {
-    if (creditosAtuais < selectedWeeks.length) {
+    if (!isFullPlan && creditosAtuais < selectedWeeks.length) {
       alert(`Saldo insuficiente. Você precisa de ${selectedWeeks.length} créditos, mas possui ${creditosAtuais}.`)
       return
     }
@@ -238,7 +240,10 @@ export default function GeradorPage() {
           zip.file(filename, docBlob)
 
           if (user) {
-            await supabase.rpc('descontar_creditos', { user_id: user.id, quantidade: 1 })
+            if (!isFullPlan) {
+              await supabase.rpc('descontar_creditos', { p_user_id: user.id, p_quantidade: 1 })
+              setCreditosAtuais(prev => prev - 1)
+            }
             const filePath = `${user.id}/${Date.now()}_${filename}`
             const { error: uploadError } = await supabase.storage.from('planos').upload(filePath, docBlob)
             let publicUrl = ""
@@ -250,7 +255,6 @@ export default function GeradorPage() {
               usuario_id: user.id, professor, escola, turma, componente: compSel, 
               bimestre: bimSel, semana: w, tema: weekLessons[0].tema, arquivo_nome: filename, arquivo_url: publicUrl
             })
-            setCreditosAtuais(prev => prev - 1)
           }
         }
       }
