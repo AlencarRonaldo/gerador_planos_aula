@@ -3,11 +3,20 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { lessons, apiKey, refBase64, refMimeType, refText } = await req.json();
+    const body = await req.json()
+    const { lessons, apiKey, refBase64, refMimeType, refText } = body
+
+    if (!lessons || !Array.isArray(lessons) || lessons.length === 0) {
+      return NextResponse.json({ error: "Nenhuma aula informada." }, { status: 400 });
+    }
 
     const finalKey = process.env.GEMINI_API_KEY || apiKey;
 
+    console.log("[GERAR] Recebendo requisição, lessons:", lessons?.length)
+    console.log("[GERAR] API Key disponível:", !!finalKey)
+
     if (!finalKey) {
+      console.error("[GERAR] API Key não encontrada")
       return NextResponse.json({ error: "Chave de API não configurada no servidor." }, { status: 400 });
     }
 
@@ -67,6 +76,7 @@ REGRAS:
     const result = await model.generateContent(parts);
     const text = result.response.text();
 
+    console.log("[GERAR] Sucesso! Texto gerado:", text?.substring(0, 100))
     return NextResponse.json({ content: text.trim() });
   } catch (error: any) {
     console.error("Erro na API de geração:", error);
