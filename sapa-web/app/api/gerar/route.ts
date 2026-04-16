@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     }
 
     const genAI = new GoogleGenerativeAI(finalKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const context = lessons.map((l: any, i: number) =>
       `Aula ${i+1}: Tema="${l.titulo || l.titulo_aula}", Objetivo="${l.obj || l.objetivo}", Habilidades="${l.hab || l.habilidades_tecnicas}"`
@@ -73,11 +73,15 @@ REGRAS:
     }
     parts.push({ text: promptText })
 
-    const result = await model.generateContent(parts);
-    const text = result.response.text();
-
-    console.log("[GERAR] Sucesso! Texto gerado:", text?.substring(0, 100))
-    return NextResponse.json({ content: text.trim() });
+    try {
+      const result = await model.generateContent(parts);
+      const text = result.response.text();
+      console.log("[GERAR] Sucesso! Texto gerado:", text?.substring(0, 100))
+      return NextResponse.json({ content: text.trim() });
+    } catch (genError: any) {
+      console.error("[GERAR] Erro na geração:", genError.message || genError)
+      return NextResponse.json({ error: "Erro ao gerar conteúdo: " + (genError.message || genError) }, { status: 500 });
+    }
   } catch (error: any) {
     console.error("Erro na API de geração:", error);
     const errorMessage = error.message?.includes('api') 
