@@ -8,9 +8,11 @@ export async function POST(request: NextRequest) {
     const { event, payment, subscription } = body
 
     if (event === 'PAYMENT_CONFIRMED' || event === 'PAYMENT_RECEIVED') {
+      console.log(`[ASAAS WEBHOOK] Pagamento confirmado para customer: ${payment?.customer || subscription?.customer}`)
+      
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      const supabase = createClient(supabaseUrl, supabaseKey)
+      const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+      const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
       const customerId = payment?.customer || subscription?.customer
 
@@ -22,27 +24,28 @@ export async function POST(request: NextRequest) {
           .maybeSingle()
 
         if (profile) {
-          if (event === 'PAYMENT_CONFIRMED' || event === 'PAYMENT_RECEIVED') {
-            if (payment?.value) {
-              const creditosComprados = Math.floor(payment.value / 2.90)
-              
-              await supabase
-                .from('perfis')
-                .update({ 
-                  creditos: profile.creditos + creditosComprados
-                })
-                .eq('id', profile.id)
-            }
+          console.log(`[ASAAS WEBHOOK] Perfil encontrado: ${profile.nome_completo} (ID: ${profile.id})`)
+          
+          if (payment?.value) {
+            const creditosComprados = Math.floor(payment.value / 2.00)
+            console.log(`[ASAAS WEBHOOK] Adicionando ${creditosComprados} créditos (Valor: R$ ${payment.value})`)
+            
+            await supabase
+              .from('perfis')
+              .update({ 
+                creditos: profile.creditos + creditosComprados
+              })
+              .eq('id', profile.id)
+          }
 
-            if (subscription) {
-              await supabase
-                .from('perfis')
-                .update({ 
-                  assinatura_ativa: true,
-                  creditos: profile.creditos + (subscription.creditsIncluded || 0)
-                })
-                .eq('id', profile.id)
-            }
+          if (subscription) {
+            await supabase
+              .from('perfis')
+              .update({ 
+                assinatura_ativa: true,
+                creditos: profile.creditos + (subscription.creditsIncluded || 0)
+              })
+              .eq('id', profile.id)
           }
         }
       }
@@ -64,7 +67,8 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } 
+  catch (error: any) {
     console.error('Erro no webhook:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

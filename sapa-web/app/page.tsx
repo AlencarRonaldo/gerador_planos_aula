@@ -203,7 +203,7 @@ export default async function Home() {
                 </div>
                 <h3 className="text-sm md:text-base font-bold text-[#1C1917] mb-2">Inicie sua primeira geração</h3>
                 <p className="text-xs md:text-sm text-[#8C7B70] max-w-xs mx-auto leading-relaxed mb-6 font-medium">
-                  Seus planos gerados aparecerão aqui para download rápido.
+                  Seus plano de aula aparecerão aqui para download rápido.
                 </p>
                 <Link href="/gerador">
                   <button className="px-6 py-2.5 border-2 border-[#C4622D] text-[#C4622D] font-black text-xs uppercase tracking-widest rounded-xl hover:bg-[#FAF8F3] transition-all">

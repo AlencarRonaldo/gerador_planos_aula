@@ -19,27 +19,21 @@ export default function LoginPage() {
     if (loading) return
     
     setLoading(true); setError(null); setMsg(null)
-    console.log("1. Iniciando processo de login para:", email)
 
     try {
-      console.log("2. Chamando Supabase Auth...")
       const { data, error } = await supabase.auth.signInWithPassword({ 
         email: email.trim(), 
         password: password 
       })
 
       if (error) {
-        console.error("3. Erro retornado pelo Supabase:", error.message)
         setError(error.message === 'Invalid login credentials' ? 'E-mail ou senha incorretos.' : error.message)
         setLoading(false)
       } else if (data.user) {
-        console.log("3. Sucesso! Usuário autenticado:", data.user.email)
-        console.log("4. Atualizando estado e redirecionando...")
         router.refresh()
         router.push('/')
       }
     } catch (err) {
-      console.error("ERRO CRÍTICO:", err)
       setError('Erro de conexão com o servidor.')
       setLoading(false)
     }
@@ -51,7 +45,6 @@ export default function LoginPage() {
       return
     }
     setLoading(true); setError(null); setMsg(null)
-    console.log("Tentando cadastrar novo professor...")
     try {
       const { error } = await supabase.auth.signUp({ 
         email: email.trim(), 
@@ -59,7 +52,6 @@ export default function LoginPage() {
         options: { emailRedirectTo: `${window.location.origin}/auth/callback` }
       })
       if (error) {
-        console.error("Erro no cadastro:", error.message)
         setError(error.message)
       } else {
         setMsg('Verifique seu e-mail para confirmar a conta!')
@@ -72,24 +64,26 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50">
-      <div className="w-full max-w-[360px] space-y-6">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-cream">
+      <div className="w-full max-w-[360px] space-y-8 animate-fade-up">
         <div className="text-center">
-          <div className="inline-flex w-14 h-14 bg-indigo-600 rounded-2xl items-center justify-center text-white shadow-xl mb-4 rotate-3">
-            <GraduationCap size={28} />
+          <div className="inline-flex w-16 h-16 bg-terra rounded-[24px] items-center justify-center text-white shadow-2xl shadow-terra/30 mb-6 rotate-3">
+            <GraduationCap size={32} strokeWidth={2.5} />
           </div>
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight leading-none">SAPA <span className="text-indigo-600 text-xs block font-black uppercase tracking-widest mt-1">SaaS</span></h1>
+          <h1 className="text-3xl font-black text-graphite tracking-tight leading-none uppercase">SAPA <span className="text-terra text-[10px] block font-black uppercase tracking-[0.3em] mt-2">Plataforma SaaS</span></h1>
         </div>
 
-        <Card className="p-6 border shadow-xl bg-white/80 backdrop-blur-sm">
-          <form onSubmit={handleLogin} className="space-y-4">
-            {error && <div className="p-3 bg-red-50 text-red-600 text-[11px] font-black uppercase text-center rounded-xl border border-red-100 leading-tight">{error}</div>}
-            {msg && <div className="p-3 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase text-center rounded-xl border border-emerald-100 leading-tight">{msg}</div>}
+        <div className="sapa-card p-8 bg-white shadow-2xl shadow-stone/20 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-terra" />
+          
+          <form onSubmit={handleLogin} className="space-y-5">
+            {error && <div className="p-4 bg-red-50 text-red-600 text-[11px] font-black uppercase text-center rounded-xl border border-red-100 leading-tight">{error}</div>}
+            {msg && <div className="p-4 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase text-center rounded-xl border border-emerald-100 leading-tight">{msg}</div>}
 
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">E-mail</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-muted uppercase tracking-[0.2em] ml-1">E-mail de Acesso</label>
+              <div className="relative group">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-stone group-focus-within:text-terra transition-colors" size={16} />
                 <input 
                   type="email" 
                   autoComplete="username"
@@ -97,16 +91,16 @@ export default function LoginPage() {
                   disabled={loading} 
                   value={email} 
                   onChange={e=>setEmail(e.target.value)} 
-                  className="w-full pl-9 pr-4 py-2.5 rounded-xl border-2 border-slate-50 bg-slate-50/50 focus:border-indigo-500 focus:bg-white outline-none text-sm transition-all font-medium disabled:opacity-50" 
-                  placeholder="nome@escola.com" 
+                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl border-2 border-stone/30 bg-cream-dark focus:border-terra focus:bg-white outline-none text-sm transition-all font-bold text-graphite disabled:opacity-50" 
+                  placeholder="seu@email.com" 
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Senha</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-muted uppercase tracking-[0.2em] ml-1">Senha Secreta</label>
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-stone group-focus-within:text-terra transition-colors" size={16} />
                 <input 
                   type="password" 
                   autoComplete="current-password"
@@ -114,29 +108,29 @@ export default function LoginPage() {
                   disabled={loading} 
                   value={password} 
                   onChange={e=>setPassword(e.target.value)} 
-                  className="w-full pl-9 pr-4 py-2.5 rounded-xl border-2 border-slate-50 bg-slate-50/50 focus:border-indigo-500 focus:bg-white outline-none text-sm transition-all font-medium disabled:opacity-50" 
+                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl border-2 border-stone/30 bg-cream-dark focus:border-terra focus:bg-white outline-none text-sm transition-all font-bold text-graphite disabled:opacity-50" 
                   placeholder="••••••••" 
                 />
               </div>
             </div>
 
-            <button type="submit" disabled={loading} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:bg-slate-400">
-              {loading ? <Loader2 className="animate-spin" size={16} /> : "Entrar no Portal"} <ArrowRight size={16} />
+            <button type="submit" disabled={loading} className="btn-primary w-full py-4 justify-center text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-terra/20 disabled:bg-stone">
+              {loading ? <Loader2 className="animate-spin" size={18} /> : "Entrar no Sistema"}
             </button>
           </form>
 
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div>
-            <div className="relative flex justify-center text-[9px] font-black uppercase text-slate-300 bg-white px-2">Acesso Rápido</div>
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t-2 border-stone/20"></div></div>
+            <div className="relative flex justify-center text-[9px] font-black uppercase text-stone bg-white px-4 tracking-widest">Ou comece agora</div>
           </div>
 
-          <button onClick={handleSignUp} disabled={loading} className="w-full py-3 border-2 border-slate-50 rounded-xl text-slate-500 font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2 disabled:opacity-50">
-            <Sparkles size={14} className="text-amber-400" /> Criar nova conta
+          <button onClick={handleSignUp} disabled={loading} className="w-full py-4 border-2 border-terra/20 rounded-2xl text-terra font-black text-[10px] uppercase tracking-[0.2em] hover:bg-terra/5 transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+            <Sparkles size={16} className="text-gold" /> Criar minha conta grátis
           </button>
-        </Card>
+        </div>
 
-        <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
-          Sistema de Apoio Pedagógico Inteligente
+        <p className="text-center text-[10px] text-muted font-black uppercase tracking-widest opacity-40">
+          Planejamento que Inspira © 2026
         </p>
       </div>
     </div>

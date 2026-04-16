@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAPA — Design Final</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #1a1a2e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 24px; color: #1C1917; }
+
+  .section-title { color: #94a3b8; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; margin-top: 32px; }
+  .section-title:first-child { margin-top: 0; }
+
+  /* ── PAINEL ── */
+  .dashboard {
+    background: #FAF8F3;
+    border-radius: 20px;
+    overflow: hidden;
+    max-width: 480px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.4);
+  }
+
+  /* Nav */
+  .nav {
+    background: white;
+    border-bottom: 1px solid #E8E0D4;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .nav-logo { display: flex; align-items: center; gap: 8px; }
+  .nav-logo-icon { background: #C4622D; border-radius: 8px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: 900; }
+  .nav-logo-text { font-weight: 900; font-size: 15px; color: #1C1917; letter-spacing: -0.5px; }
+  .nav-tabs { display: flex; align-items: center; gap: 2px; background: #F2EEE6; padding: 3px; border-radius: 10px; border: 1px solid #E8E0D4; }
+  .nav-tab { padding: 4px 12px; font-size: 11px; font-weight: 700; border-radius: 7px; color: #8C7B70; cursor: pointer; transition: all .15s; }
+  .nav-tab.active { background: white; color: #1C1917; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .nav-avatar { background: #C4622D; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 900; box-shadow: 0 2px 8px rgba(196,98,45,.35); }
+
+  /* Main */
+  .main { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+
+  /* Banner de boas-vindas */
+  .welcome-banner {
+    background: linear-gradient(135deg, #3D2B1F 0%, #4A3228 100%);
+    border-radius: 20px;
+    padding: 18px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 100px; height: 100px;
+    background: rgba(196,98,45,.15);
+    border-radius: 50%;
+  }
+  .welcome-text { position: relative; z-index: 1; }
+  .welcome-greeting { color: rgba(255,255,255,.45); font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+  .welcome-name { color: white; font-size: 17px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 3px; }
+  .welcome-school { color: rgba(255,255,255,.4); font-size: 11px; font-weight: 500; margin-bottom: 10px; }
+  .plan-badge-full { display: inline-flex; align-items: center; gap: 4px; background: rgba(196,98,45,.25); color: #E07A4A; border: 1px solid rgba(196,98,45,.35); padding: 3px 10px; border-radius: 20px; font-size: 9px; font-weight: 900; letter-spacing: .5px; }
+  .welcome-cta { position: relative; z-index: 1; }
+  .btn-novo { background: #C4622D; color: white; border: none; border-radius: 12px; padding: 11px 16px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .5px; cursor: pointer; box-shadow: 0 4px 16px rgba(196,98,45,.4); white-space: nowrap; display: flex; flex-direction: column; align-items: center; gap: 1px; }
+  .btn-novo-sub { font-size: 8px; font-weight: 500; opacity: .7; text-transform: none; letter-spacing: 0; }
+
+  /* Stats row */
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card { background: white; border: 1px solid #E8E0D4; border-radius: 16px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+  .stat-label { font-size: 9px; font-weight: 900; color: #B5A89A; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+  .stat-value { font-size: 26px; font-weight: 900; color: #1C1917; line-height: 1; margin-bottom: 4px; }
+  .stat-tag { display: inline-block; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 5px; }
+  .stat-tag.green { background: #DCFCE7; color: #16A34A; }
+  .stat-tag.amber { background: #FEF3C7; color: #D97706; }
+
+  /* Histórico */
+  .history-card { background: white; border: 1px solid #E8E0D4; border-radius: 20px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+  .history-header { padding: 12px 16px; border-bottom: 1px solid #E8E0D4; display: flex; justify-content: space-between; align-items: center; }
+  .history-title { font-size: 10px; font-weight: 900; color: #1C1917; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; }
+  .history-title-dot { width: 6px; height: 6px; background: #C4622D; border-radius: 50%; }
+  .history-link { font-size: 10px; font-weight: 700; color: #C4622D; }
+  .history-item { padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F5F1EA; transition: background .1s; }
+  .history-item:last-child { border-bottom: none; }
+  .history-item:hover { background: #FAF8F3; }
+  .history-icon { width: 34px; height: 34px; background: #F2EEE6; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .history-info { flex: 1; margin-left: 10px; }
+  .history-component { font-size: 12px; font-weight: 700; color: #1C1917; }
+  .history-meta { font-size: 10px; color: #B5A89A; font-weight: 500; margin-top: 1px; }
+  .btn-download { border: 1.5px solid #E8E0D4; color: #C4622D; background: transparent; border-radius: 8px; padding: 5px 10px; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: .5px; cursor: pointer; }
+
+  /* ── GERADOR ── */
+  .generator {
+    background: #FAF8F3;
+    border-radius: 20px;
+    overflow: hidden;
+    max-width: 480px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.4);
+    margin-top: 0;
+  }
+
+  /* Progress bar */
+  .progress-bar-wrap { background: white; border-bottom: 1px solid #E8E0D4; padding: 12px 20px; }
+  .progress-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .progress-step-label { font-size: 10px; font-weight: 900; color: #C4622D; text-transform: uppercase; letter-spacing: 1px; }
+  .progress-step-count { font-size: 10px; font-weight: 700; color: #B5A89A; }
+  .progress-title { font-size: 11px; font-weight: 700; color: #8C7B70; margin-bottom: 7px; }
+  .progress-track { background: #F2EEE6; height: 5px; border-radius: 3px; overflow: hidden; }
+  .progress-fill { background: #C4622D; height: 5px; border-radius: 3px; width: 40%; transition: width .3s; }
+
+  /* Step body */
+  .step-body { padding: 20px; }
+  .step-heading { margin-bottom: 16px; }
+  .step-h { font-size: 22px; font-weight: 900; color: #1C1917; letter-spacing: -0.5px; }
+
+  /* Form */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-field { display: flex; flex-direction: column; gap: 4px; }
+  .form-field.full { grid-column: 1 / -1; }
+  .form-label { font-size: 9px; font-weight: 900; color: #B5A89A; text-transform: uppercase; letter-spacing: 1px; padding-left: 2px; }
+  .form-input { padding: 12px 14px; border: 2px solid #E8E0D4; background: #F2EEE6; border-radius: 12px; font-size: 13px; font-weight: 600; color: #1C1917; outline: none; }
+  .form-input:focus { border-color: #C4622D; background: white; }
+  .form-input::placeholder { color: #C4B8AE; font-weight: 400; }
+
+  /* File upload cards */
+  .file-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .file-card { border: 2px dashed #E8E0D4; border-radius: 16px; padding: 14px 10px; text-align: center; cursor: pointer; transition: all .15s; }
+  .file-card:hover { border-color: #C4622D; background: #FEF0E8; }
+  .file-card.uploaded { border-style: solid; border-color: #C4622D; background: #FEF0E8; }
+  .file-card-icon { font-size: 20px; margin-bottom: 5px; }
+  .file-card-label { font-size: 9px; font-weight: 900; color: #1C1917; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
+  .file-card-desc { font-size: 8px; color: #B5A89A; font-weight: 500; }
+  .file-card-badge { display: inline-block; background: #C4622D; color: white; font-size: 7px; font-weight: 900; padding: 1px 5px; border-radius: 4px; margin-top: 4px; }
+
+  /* Bottom nav -->  */
+  .step-footer { padding: 14px 20px; background: white; border-top: 1px solid #E8E0D4; display: flex; justify-content: space-between; align-items: center; }
+  .btn-back { border: 2px solid #E8E0D4; background: transparent; color: #8C7B70; border-radius: 10px; padding: 9px 16px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .5px; cursor: pointer; }
+  .btn-next { background: #C4622D; color: white; border: none; border-radius: 10px; padding: 9px 20px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .5px; cursor: pointer; box-shadow: 0 4px 12px rgba(196,98,45,.3); display: flex; align-items: center; gap: 6px; }
+
+  /* Layout wrapper */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+  .col-label { color: #64748b; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #334155; }
+</style>
+</head>
+<body>
+
+<div class="two-col">
+
+  <!-- COLUNA 1: PAINEL -->
+  <div>
+    <div class="col-label">Painel de Controle</div>
+    <div class="dashboard">
+
+      <!-- Nav -->
+      <div class="nav">
+        <div class="nav-logo">
+          <div class="nav-logo-icon">S</div>
+          <span class="nav-logo-text">SAPA</span>
+        </div>
+        <div class="nav-tabs">
+          <div class="nav-tab active">Painel</div>
+          <div class="nav-tab">Histórico</div>
+          <div class="nav-tab">Novo</div>
+        </div>
+        <div class="nav-avatar">R</div>
+      </div>
+
+      <!-- Main -->
+      <div class="main">
+
+        <!-- Banner boas-vindas (Plano Full) -->
+        <div class="welcome-banner">
+          <div class="welcome-text">
+            <div class="welcome-greeting">Boa tarde</div>
+            <div class="welcome-name">Prof. Ronaldo</div>
+            <div class="welcome-school">E. E. Ayrton Senna</div>
+            <div class="plan-badge-full">✦ PLANO FULL · 9999 créditos</div>
+          </div>
+          <div class="welcome-cta">
+            <button class="btn-novo">
+              + Novo Plano
+              <span class="btn-novo-sub">gerar agora</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Total Gerado</div>
+            <div class="stat-value">12</div>
+            <span class="stat-tag green">planos criados</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Esta Semana</div>
+            <div class="stat-value">3</div>
+            <span class="stat-tag amber">novos planos</span>
+          </div>
+        </div>
+
+        <!-- Histórico -->
+        <div class="history-card">
+          <div class="history-header">
+            <div class="history-title">
+              <div class="history-title-dot"></div>
+              Histórico Recente
+            </div>
+            <a class="history-link">Ver tudo →</a>
+          </div>
+          <div class="history-item">
+            <div class="history-icon">📄</div>
+            <div class="history-info">
+              <div class="history-component">Informática · Semana 3</div>
+              <div class="history-meta">há 2 dias · 3º B · 1º Bimestre</div>
+            </div>
+            <button class="btn-download">↓ Word</button>
+          </div>
+          <div class="history-item">
+            <div class="history-icon">📄</div>
+            <div class="history-info">
+              <div class="history-component">Redes · Semana 2</div>
+              <div class="history-meta">há 5 dias · 3º B · 1º Bimestre</div>
+            </div>
+            <button class="btn-download">↓ Word</button>
+          </div>
+          <div class="history-item">
+            <div class="history-icon">📄</div>
+            <div class="history-info">
+              <div class="history-component">Hardware · Semana 1</div>
+              <div class="history-meta">há 1 semana · 3º B · 1º Bimestre</div>
+            </div>
+            <button class="btn-download">↓ Word</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- COLUNA 2: GERADOR -->
+  <div>
+    <div class="col-label">Gerador — Passo 2 de 5</div>
+    <div class="generator">
+
+      <!-- Nav gerador -->
+      <div class="nav">
+        <div class="nav-logo">
+          <div class="nav-logo-icon">←</div>
+          <span style="font-size:12px;font-weight:700;color:#8C7B70">Painel</span>
+        </div>
+        <div style="font-size:10px;color:#B5A89A;font-weight:500">Histórico</div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="progress-bar-wrap">
+        <div class="progress-meta">
+          <span class="progress-step-label">Passo 2 de 5</span>
+          <span class="progress-step-count">40%</span>
+        </div>
+        <div class="progress-title">Arquivos Base</div>
+        <div class="progress-track">
+          <div class="progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- Step body -->
+      <div class="step-body">
+        <div class="step-heading">
+          <div class="step-h">Arquivos Base</div>
+        </div>
+
+        <div class="file-grid">
+          <div class="file-card uploaded">
+            <div class="file-card-icon">📊</div>
+            <div class="file-card-label">Escopo</div>
+            <div class="file-card-desc">.xlsx</div>
+            <div class="file-card-badge">✓ ok</div>
+          </div>
+          <div class="file-card uploaded">
+            <div class="file-card-icon">📝</div>
+            <div class="file-card-label">Modelo</div>
+            <div class="file-card-desc">.docx</div>
+            <div class="file-card-badge">✓ ok</div>
+          </div>
+          <div class="file-card">
+            <div class="file-card-icon">📎</div>
+            <div class="file-card-label">Referência</div>
+            <div class="file-card-desc">PDF/TXT · opcional</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;background:#F2EEE6;border-radius:12px;padding:10px 12px;font-size:10px;color:#8C7B70;line-height:1.5">
+          <strong style="color:#1C1917">Escopo:</strong> planilha com componentes e semanas<br>
+          <strong style="color:#1C1917">Modelo:</strong> seu .docx com o layout da escola<br>
+          <strong style="color:#8C7B70">Referência:</strong> ementa ou apostila (opcional)
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="step-footer">
+        <button class="btn-back">← Voltar</button>
+        <button class="btn-next">Continuar →</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

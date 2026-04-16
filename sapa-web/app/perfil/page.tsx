@@ -58,98 +58,114 @@ export default function PerfilPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <Loader2 className="animate-spin text-indigo-600" size={32} />
+    <div className="min-h-screen bg-[#FAF8F3] flex items-center justify-center">
+      <Loader2 className="animate-spin text-[#C4622D]" size={40} />
     </div>
   )
 
   const initials = nome.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase() || email[0]?.toUpperCase() || '?'
 
   return (
-    <div className="min-h-screen bg-slate-50/50 pb-12">
-      <nav className="nav-blur px-6 py-3 mb-8 flex justify-between items-center shadow-sm bg-white">
-        <Link href="/" className="flex items-center gap-2 text-indigo-600 font-bold text-sm">
-          <ArrowLeft size={16} /> Voltar ao Painel
-        </Link>
-        <h1 className="text-sm font-black text-slate-900 uppercase tracking-tighter">Meu Perfil</h1>
-        <button onClick={handleLogout} className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-red-500 transition-colors">
-          <LogOut size={14} /> Sair
-        </button>
+    <div className="min-h-screen bg-[#FAF8F3] pb-12">
+      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-[#E8E0D4]">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-3 flex justify-between items-center">
+          <Link href="/" className="flex items-center gap-2 text-[#C4622D] font-black text-[10px] uppercase tracking-widest">
+            <ArrowLeft size={16} strokeWidth={3} /> Painel
+          </Link>
+          <h1 className="text-xs font-black text-[#1C1917] uppercase tracking-[0.2em]">Meu Perfil</h1>
+          <button onClick={handleLogout} className="text-[10px] font-black uppercase text-[#8C7B70] hover:text-red-500 transition-colors">Sair</button>
+        </div>
       </nav>
 
-      <main className="max-w-lg mx-auto px-4 space-y-6">
+      <main className="max-w-lg mx-auto px-4 pt-24 space-y-8">
         {/* Avatar */}
-        <div className="flex flex-col items-center gap-3 py-6">
-          <div className="w-20 h-20 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-[28px] flex items-center justify-center text-white text-2xl font-black shadow-xl shadow-indigo-200 rotate-3">
+        <div className="flex flex-col items-center gap-4 py-4">
+          <div className="w-24 h-24 bg-[#C4622D] rounded-[32px] flex items-center justify-center text-white text-3xl font-black shadow-2xl shadow-[#C4622D]/20 rotate-3">
             {initials}
           </div>
           <div className="text-center">
-            <p className="font-black text-slate-900 text-lg leading-tight">{nome || 'Professor'}</p>
-            <p className="text-slate-400 text-xs font-medium">{email}</p>
+            <p className="font-black text-[#1C1917] text-xl tracking-tight leading-tight">{nome || 'Professor'}</p>
+            <p className="text-[#8C7B70] text-xs font-bold uppercase tracking-widest mt-1 opacity-60">{email}</p>
+          </div>
+        </div>
+
+        {/* Card de Créditos */}
+        <div className="rounded-[24px] p-6 bg-[#3D2B1F] relative overflow-hidden shadow-xl shadow-[#3D2B1F]/20">
+          <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-[#C4622D]/20 rounded-full blur-3xl" />
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-[#E07A4A]">
+                <Coins size={22} />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">Créditos Disponíveis</p>
+                <p className="text-2xl font-black text-white">{creditos}</p>
+              </div>
+            </div>
+            <Link href="/planos">
+              <button 
+                className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-lg border border-[#C4622D]/20"
+                style={{ backgroundColor: '#C4622D', color: '#ffffff' }}
+              >
+                Recarregar
+              </button>
+            </Link>
           </div>
         </div>
 
         {/* Formulário */}
-        <div className="premium-card p-6 space-y-5 bg-white">
-          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl border-2 border-indigo-100 mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white">
-                <Coins size={18} />
-              </div>
-              <div>
-                <p className="text-[10px] font-black uppercase text-indigo-600 tracking-widest">Saldo de Créditos</p>
-                <p className="text-xl font-black text-slate-900">{creditos}</p>
-              </div>
-            </div>
-            <Link href="/planos" className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-indigo-700 transition-colors">
-              <CreditCard size={14} /> Comprar
-            </Link>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-1.5"><User size={10} /> Nome Completo</label>
+        <div className="bg-white rounded-[32px] border border-[#E8E0D4] p-6 md:p-8 space-y-6 shadow-sm">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1 flex items-center gap-2">
+              <User size={12} className="text-[#C4622D]" /> Nome Completo
+            </label>
             <input
               value={nome}
               onChange={e => setNome(e.target.value)}
-              className="w-full p-3 rounded-xl border-2 border-slate-50 bg-slate-50/50 focus:border-indigo-500 focus:bg-white outline-none text-sm font-medium transition-all"
+              className="w-full p-4 rounded-2xl border-2 border-[#E8E0D4] bg-[#F2EEE6] focus:border-[#C4622D] focus:bg-white outline-none text-sm font-bold text-[#1C1917] transition-all"
               placeholder="Seu nome completo"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-1.5"><School size={10} /> Escola Padrão</label>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1 flex items-center gap-2">
+              <School size={12} className="text-[#C4622D]" /> Escola Padrão
+            </label>
             <input
               value={escola}
               onChange={e => setEscola(e.target.value)}
-              className="w-full p-3 rounded-xl border-2 border-slate-50 bg-slate-50/50 focus:border-indigo-500 focus:bg-white outline-none text-sm font-medium transition-all"
+              className="w-full p-4 rounded-2xl border-2 border-[#E8E0D4] bg-[#F2EEE6] focus:border-[#C4622D] focus:bg-white outline-none text-sm font-bold text-[#1C1917] transition-all"
               placeholder="Nome da instituição"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-1.5"><BookOpen size={10} /> Matéria Favorita</label>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1 flex items-center gap-2">
+              <BookOpen size={12} className="text-[#C4622D]" /> Matéria Favorita
+            </label>
             <input
               value={materiaPadrao}
               onChange={e => setMateriaPadrao(e.target.value)}
-              className="w-full p-3 rounded-xl border-2 border-slate-50 bg-slate-50/50 focus:border-indigo-500 focus:bg-white outline-none text-sm font-medium transition-all"
-              placeholder="Ex: Análise de Dados"
+              className="w-full p-4 rounded-2xl border-2 border-[#E8E0D4] bg-[#F2EEE6] focus:border-[#C4622D] focus:bg-white outline-none text-sm font-bold text-[#1C1917] transition-all"
+              placeholder="Ex: Inteligência Artificial"
             />
           </div>
 
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full py-3 btn-gradient flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest"
+            className="w-full py-4 bg-[#C4622D] text-white rounded-2xl flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-[#C4622D]/20 hover:bg-[#9C4A1F] transition-all disabled:bg-[#8C7B70]"
           >
-            {saving ? <Loader2 className="animate-spin" size={16} /> : saved ? <CheckCircle size={16} /> : <Save size={16} />}
-            {saving ? 'Salvando...' : saved ? 'Salvo!' : 'Salvar Alterações'}
+            {saving ? <Loader2 className="animate-spin" size={18} /> : saved ? <CheckCircle size={18} /> : <Save size={18} />}
+            {saving ? 'Salvando...' : saved ? 'Perfil Atualizado!' : 'Salvar Perfil'}
           </button>
         </div>
 
         <button
           onClick={handleLogout}
-          className="w-full py-3 border-2 border-red-100 rounded-xl text-red-400 font-black text-[10px] uppercase tracking-widest hover:bg-red-50 transition-all flex items-center justify-center gap-2"
+          className="w-full py-4 border-2 border-red-100 rounded-2xl text-red-500 font-black text-[10px] uppercase tracking-widest hover:bg-red-50 transition-all flex items-center justify-center gap-2"
         >
-          <LogOut size={14} /> Sair da Conta
+          <LogOut size={16} /> Encerrar Sessão
         </button>
       </main>
     </div>

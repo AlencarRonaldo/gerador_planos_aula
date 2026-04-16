@@ -41,8 +41,7 @@ class DatabaseManager:
                 "componente": componente,
                 "bimestre": bimestre,
                 "semana": semana,
-                "filename": filename,
-                "data_geracao": datetime.now().isoformat(),
+                "arquivo_nome": filename, # Corrigido de 'filename' para 'arquivo_nome'
                 "tamanho_kb": round(len(content) / 1024, 2)
             }
             # Insere o registro via API REST (Postgrest)

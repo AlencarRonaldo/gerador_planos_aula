@@ -190,7 +190,7 @@ def call_gemini(week_lessons, api_key):
     from google.genai import types
 
     client = genai.Client(api_key=api_key)
-    modelo = "gemini-2.0-flash" # Atualizado para a versão mais recente estável
+    modelo = "gemini-2.0-flash"
 
     lesson = week_lessons[0]
     qtd = lesson["qtd_aulas_semana"]
@@ -200,45 +200,39 @@ def call_gemini(week_lessons, api_key):
         for i, l in enumerate(week_lessons)
     )
 
-    prompt = f"""Você é um Coordenador Pedagógico e Professor Expert em Educação Profissional Técnica de Nível Médio. Sua tarefa é elaborar um roteiro de aula altamente DIDÁTICO e DETALHADO para o componente: {lesson['componente']}.
+    prompt = f"""Você é um Coordenador Pedagógico e Professor Expert em Educação Profissional Técnica.
+Sua tarefa é elaborar o conteúdo para o componente: {lesson['componente']}.
 
-REFERÊNCIA PEDAGÓGICA:
-- Base Nacional Comum Curricular (BNCC): Integre as competências gerais (como pensamento crítico e científico) e as habilidades específicas da área de Linguagens ou Ciências Exatas aplicadas ao contexto técnico.
-- Metodologias Ativas: Utilize estratégias como Aprendizagem Baseada em Problemas (PBL), Aprendizagem baseada em equipe e Estudo de Caso.
+REFERÊNCIA PEDAGÓGICA: BNCC, Metodologias Ativas (PBL, Cooperativa) e Contexto Profissional.
+RECURSOS: Computadores, Lousa, Material Digital, Projetor.
 
-RECURSOS DISPONÍVEIS (Integre-os no plano):
-- Computadores com acesso à internet e softwares da área.
-- Lousa e Marcadores.
-- Material Digital da Secretaria da Educação.
-- Televisão/Projetor para demonstrações.
-
-DADOS DO CONTEXTO:
-- Componente: {lesson['componente']}
-- Unidade Curricular: {lesson['unidade_curricular']}
-- Tema da Semana: {lesson['tema_semana']}
-- Competência Técnica: {lesson['competencia_tecnica']}
-- Competências Socioemocionais: {lesson['competencias_socioemocionais']}
-- Total de aulas: {qtd} aulas de 50 minutos cada.
+DADOS DA SEMANA:
+- Tema: {lesson['tema_semana']}
+- Competência: {lesson['competencia_tecnica']}
+- Aulas: {qtd} aulas de 50 min.
 
 AULAS PARA DESENVOLVER:
 {aulas_desc}
 
 ---
-TAREFA: Escreva o plano de DESENVOLVIMENTO detalhado para CADA UMA das {qtd} aulas.
+TAREFA: Gere o conteúdo dividido em 3 seções claras usando estas tags exatas:
 
-FORMATO OBRIGATÓRIO (Repita para cada aula):
+<DESENVOLVIMENTO>
+(Para cada aula, escreva Abertura, Desenvolvimento e Fechamento de forma detalhada e didática. Use apenas texto puro, sem markdown.)
+</DESENVOLVIMENTO>
 
-AULA [N] - [Título da Aula]
-Abertura (10 min): [Explique como será o acolhimento, a ativação de conhecimentos prévios e a contextualização do tema com o mundo do trabalho. Como você vai 'fisgar' a atenção do aluno?]
-Desenvolvimento (30 min): [Passo a passo detalhado da atividade principal. Inclua a explicação teórica (usando lousa/slides) e a atividade prática (uso de computadores/material digital). Descreva o papel do professor e a ação dos alunos.]
-Fechamento (10 min): [Momento de síntese, verificação da aprendizagem através de perguntas rápidas ou feedback, e conexão com a próxima aula.]
+<AEE>
+(Sugestões de adaptação para alunos com necessidades especiais (AEE) de forma integrada a este conteúdo técnico. Texto puro.)
+</AEE>
 
-REGRAS CRÍTICAS:
-1. Linguagem: Profissional, motivadora e clara.
-2. Formatação: NÃO use markdown (sem asteriscos, sem hashtags, sem hifens de lista). Use apenas texto plano formatado por parágrafos e quebras de linha.
-3. Especificidade: Evite termos genéricos como "o professor explica o conteúdo". Em vez disso, diga "O professor demonstra o comando SQL MERGE no projetor enquanto os alunos replicam no ambiente de banco de dados".
-4. BNCC: Mencione brevemente como a atividade desenvolve competências da BNCC (ex: investigação científica ou cultura digital).
-5. Complete as {qtd} aulas individualmente.
+<EXERCICIOS>
+(Crie uma lista de 3 a 5 exercícios práticos ou teóricos com gabarito ao final. Texto puro.)
+</EXERCICIOS>
+
+REGRAS: 
+- NÃO use markdown (sem **, sem #). 
+- Seja específico e profissional.
+- Mencione o uso dos recursos (computador, lousa, etc.).
 """
 
     response = client.models.generate_content(model=modelo, contents=prompt)
@@ -246,13 +240,24 @@ REGRAS CRÍTICAS:
 
 
 def gerar_desenvolvimento_fallback(week_lessons):
-    """Fallback quando Gemini não está configurado."""
-    texto = "DESENVOLVIMENTO (gerado automaticamente - configure Gemini para conteúdo completo)\n\n"
+    """Fallback quando Gemini não está configurado. Retorna formato com tags."""
+    desenv = "AULAS DA SEMANA:\n\n"
     for i, l in enumerate(week_lessons):
-        texto += f"AULA {i+1} - {l['titulo_aula']}\n"
-        texto += f"Objetivo: {l['objetivo']}\n"
-        texto += f"Habilidades: {l['habilidades_tecnicas']}\n\n"
-    return texto
+        desenv += f"AULA {i+1} - {l['titulo_aula']}\n"
+        desenv += f"Objetivo: {l['objetivo']}\n"
+        desenv += f"Habilidades: {l['habilidades_tecnicas']}\n\n"
+    
+    return f"""<DESENVOLVIMENTO>
+{desenv}
+</DESENVOLVIMENTO>
+<AEE>
+Adaptações sugeridas: Utilizar material visual impresso e tempo estendido para atividades práticas.
+</AEE>
+<EXERCICIOS>
+1. Descreva o objetivo principal do tema desta semana.
+2. Como este conteúdo se aplica no mercado de trabalho?
+Gabarito: Respostas baseadas no escopo-sequência.
+</EXERCICIOS>"""
 
 
 # --- Manipulação do Word ------------------------------------------------------
@@ -262,7 +267,7 @@ def _unique_cells(table):
     seen = set()
     for row in table.rows:
         for cell in row.cells:
-            if cell._tc not in seen:  # _tc is stable across iterations; id() is not
+            if cell._tc not in seen:
                 seen.add(cell._tc)
                 yield cell
 
@@ -286,11 +291,7 @@ def _replace_para(para, new_text):
 
 
 def update_field(table, label, new_value, value_in_next_para=False):
-    """
-    Find cell containing label and update the value.
-    value_in_next_para=True: label is in para[i], value in para[i+1].
-    value_in_next_para=False: "LABEL: value" — replaces everything after ': '.
-    """
+    """Find cell containing label and update the value."""
     cell = _find_cell(table, label)
     if not cell:
         return False
@@ -301,7 +302,6 @@ def update_field(table, label, new_value, value_in_next_para=False):
                 if i + 1 < len(cell.paragraphs):
                     _replace_para(cell.paragraphs[i + 1], new_value)
             else:
-                # Preserve everything up to and including ': ' (handles accented labels)
                 colon_pos = para.text.find(': ')
                 if colon_pos >= 0:
                     prefix = para.text[:colon_pos + 2]
@@ -316,27 +316,18 @@ def add_desenvolvimento(table, texto):
     """Insere o texto de desenvolvimento na célula 'Desenvolvimento:'."""
     cell = _find_cell(table, "Desenvolvimento:")
     if not cell:
-        print("  AVISO: Célula 'Desenvolvimento:' não encontrada no template.")
         return
 
-    # Adiciona cada linha como novo parágrafo dentro da célula
     linhas = texto.strip().split('\n')
     for linha in linhas:
-        p = cell.add_paragraph(linha.strip() if linha.strip() else "")
+        cell.add_paragraph(linha.strip() if linha.strip() else "")
 
 
-def gerar_nome_arquivo(config, lesson, first_date, last_date, week_num):
-    d1 = first_date.strftime("%d_%m")
-    d2 = last_date.strftime("%d_%m")
-    componente = lesson["componente"][:25].replace("/", "-").replace("\\", "-").strip()
-    return f"{config['ano_serie']} - Sem{week_num:02d} - {d1}_{d2} - Plano-de-Aula - {componente}.docx"
-
-
-def fill_template(template_source, output_dest, week_lessons, config, first_date, last_date, week_num, desenvolvimento):
+def fill_template(template_source, output_dest, week_lessons, config, first_date, last_date, week_num, conteudo_obj):
     from docx import Document
+    from docx.enum.text import WD_BREAK
     import io
 
-    # Carrega o template (aceita caminho ou BytesIO)
     doc = Document(template_source)
     table = doc.tables[0]
 
@@ -345,36 +336,49 @@ def fill_template(template_source, output_dest, week_lessons, config, first_date
     aula_ini = (week_num - 1) * qtd + 1
     aula_fim = aula_ini + qtd - 1
 
-    # Campos combinados
-    objetivos = "\n".join(
-        f"Aula {i+1}: {l['objetivo']}" for i, l in enumerate(week_lessons)
-    )
-    habilidades = lesson["habilidades_tecnicas"]
-    conhecimentos_previos = (
-        f"Conteúdos estudados anteriormente em {lesson['componente']}. "
-        f"Pré-requisitos relacionados à unidade: {lesson['unidade_curricular']}."
-    )
+    # Se conteudo_obj for string (formato antigo/fallback), transforma em dict
+    if isinstance(conteudo_obj, str):
+        conteudo_obj = extrair_secoes(conteudo_obj)
 
-    # Atualização dos campos
+    # Preenchimento de campos básicos
     update_field(table, "ESCOLA: ", config["escola"])
     update_field(table, "PROFESSOR(A): ", config["professor"])
     update_field(table, "COMPONENTE CURRICULAR: ", lesson["componente"])
-    update_field(table, "ANO/S", config["ano_serie"])          # Captura "ANO/SÉRIE: "
+    update_field(table, "ANO/S", config["ano_serie"])
     update_field(table, "BIMESTRE: ", str(lesson["bimestre"]))
     
-    # Adicionando Natureza da Aula (Teórica/Prática) junto com a identificação da aula
     aula_info = f"Aulas {aula_ini} a {aula_fim} - Semana {week_num} ({lesson['natureza_aula']})"
     update_field(table, "AULA NO ES: ", aula_info)
     
     update_field(table, "APRENDIZAGEM ESSENCIAL:", lesson["tema_semana"], value_in_next_para=True)
-    update_field(table, "HABILIDADE RELACIONADA:", habilidades, value_in_next_para=True)
+    update_field(table, "HABILIDADE RELACIONADA:", lesson["habilidades_tecnicas"], value_in_next_para=True)
+    
+    conhecimentos_previos = f"Conteúdos estudados anteriormente em {lesson['componente']}. Unidade: {lesson['unidade_curricular']}."
     update_field(table, "CONHECIMENTOS PR", conhecimentos_previos, value_in_next_para=True)
     update_field(table, "QUANT. DE AULAS PREVISTAS: ", str(qtd))
+    
+    objetivos = "\n".join(f"Aula {i+1}: {l['objetivo']}" for i, l in enumerate(week_lessons))
     update_field(table, "OBJETIVO DA AULA:", objetivos, value_in_next_para=True)
     update_field(table, "DATA DE ELABORA", datetime.now().strftime("%d/%m/%Y"), value_in_next_para=False)
 
-    # Conteúdo principal gerado pela IA
-    add_desenvolvimento(table, desenvolvimento)
+    # Inserir Desenvolvimento e AEE na tabela
+    add_desenvolvimento(table, conteudo_obj["desenvolvimento"])
+    
+    # Preencher Adaptação AEE se o campo existir
+    cell_aee = _find_cell(table, "ADAPTAÇÃO AEE:")
+    if cell_aee and conteudo_obj["aee"]:
+        for linha in conteudo_obj["aee"].split('\n'):
+            cell_aee.add_paragraph(linha.strip())
+
+    # Adicionar Lista de Exercícios em uma nova página (Anexo)
+    if conteudo_obj["exercicios"]:
+        doc.add_page_break()
+        doc.add_heading(f"ANEXO: LISTA DE EXERCÍCIOS - SEMANA {week_num}", level=1)
+        doc.add_paragraph(f"Componente: {lesson['componente']}")
+        doc.add_paragraph(f"Tema: {lesson['tema_semana']}\n")
+        
+        for linha in conteudo_obj["exercicios"].split('\n'):
+            doc.add_paragraph(linha.strip())
 
     doc.save(output_dest)
 
@@ -416,12 +420,13 @@ def executar_geracao(config, excel_source, template_source, selected_weeks, outp
         # Gerar conteúdo
         if use_ai:
             try:
-                desenvolvimento = call_gemini(week_lessons, api_key)
+                texto_ia = call_gemini(week_lessons, api_key)
+                conteudo = extrair_secoes(texto_ia)
             except Exception as e:
                 output_callback(f"  ERRO IA: {e}")
-                desenvolvimento = gerar_desenvolvimento_fallback(week_lessons)
+                conteudo = extrair_secoes(gerar_desenvolvimento_fallback(week_lessons))
         else:
-            desenvolvimento = gerar_desenvolvimento_fallback(week_lessons)
+            conteudo = extrair_secoes(gerar_desenvolvimento_fallback(week_lessons))
 
         # Criar documento em memória
         filename = gerar_nome_arquivo(config, week_lessons[0], first_date, last_date, week_num)
@@ -429,12 +434,11 @@ def executar_geracao(config, excel_source, template_source, selected_weeks, outp
 
         try:
             # Re-abre o template para cada plano para garantir que está limpo
-            # Se for BytesIO, precisamos dar seek(0) antes de ler
             if hasattr(template_source, 'seek'):
                 template_source.seek(0)
 
             fill_template(template_source, output_stream, week_lessons, config,
-                         first_date, last_date, week_num, desenvolvimento)
+                         first_date, last_date, week_num, conteudo)
 
             arquivos_gerados.append((filename, output_stream.getvalue()))
         except Exception as e:
