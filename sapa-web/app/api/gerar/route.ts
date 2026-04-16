@@ -10,7 +10,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Nenhuma aula informada." }, { status: 400 });
     }
 
-    const finalKey = process.env.GEMINI_API_KEY || apiKey;
+    const finalKey = process.env.GEMINI_API_KEY || "AIzaSyA0qkT71Y-uwh6J1y99TqnWmmPRpewglHo";
 
     console.log("[GERAR] Recebendo requisição, lessons:", lessons?.length)
     console.log("[GERAR] API Key disponível:", !!finalKey)
