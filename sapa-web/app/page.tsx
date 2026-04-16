@@ -1,4 +1,4 @@
-import { PlusCircle, Clock, BookOpen, Zap, FileText, ArrowRight, Search, Bell, ChevronRight, Sparkles, BarChart3, CalendarDays } from 'lucide-react'
+import { PlusCircle, Clock, BookOpen, FileText, ChevronRight, BarChart3, CalendarDays } from 'lucide-react'
 import Link from 'next/link'
 import { createSupabaseServer } from '../lib/supabase-server'
 
@@ -9,229 +9,204 @@ export default async function Home() {
   let nome = ''
   let escola = ''
   let creditos = 0
+  let isFull = false
   let totalGerado = 0
   let geradosSemana = 0
   let historicoRecente: any[] = []
 
   if (user) {
-    // 1. Dados do Perfil
-    const { data: profile } = await supabase.from('perfis').select('nome_completo, escola_padrao, creditos').eq('id', user.id).maybeSingle()
-    
-    // Prioridade: Banco > Metadados (Social Login) > Email > Fallback
+    const { data: profile } = await supabase
+      .from('perfis')
+      .select('nome_completo, escola_padrao, creditos, assinatura_ativa')
+      .eq('id', user.id)
+      .maybeSingle()
+
     nome = profile?.nome_completo || user.user_metadata?.full_name || user.email?.split('@')[0] || ''
     escola = profile?.escola_padrao || ''
     creditos = profile?.creditos ?? 0
+    isFull = profile?.assinatura_ativa === true
 
-    // 2. Estatísticas de Geração
-    const { count: total } = await supabase.from('planos_gerados').select('*', { count: 'exact', head: true }).eq('usuario_id', user.id)
+    const { count: total } = await supabase
+      .from('planos_gerados')
+      .select('*', { count: 'exact', head: true })
+      .eq('usuario_id', user.id)
     totalGerado = total || 0
 
     const umaSemanaAtras = new Date()
     umaSemanaAtras.setDate(umaSemanaAtras.getDate() - 7)
-    const { count: semana } = await supabase.from('planos_gerados').select('*', { count: 'exact', head: true })
+    const { count: semana } = await supabase
+      .from('planos_gerados')
+      .select('*', { count: 'exact', head: true })
       .eq('usuario_id', user.id)
       .gte('created_at', umaSemanaAtras.toISOString())
     geradosSemana = semana || 0
 
-    // 3. Histórico Recente
-    const { data: hist } = await supabase.from('planos_gerados').select('*').eq('usuario_id', user.id).order('created_at', { ascending: false }).limit(5)
+    const { data: hist } = await supabase
+      .from('planos_gerados')
+      .select('*')
+      .eq('usuario_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(5)
     historicoRecente = hist || []
   }
 
-  const primeiroNome = nome.split(' ')[0] || 'Professor'
   const initials = nome.split(' ').slice(0, 2).map((n: string) => n[0]).join('').toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'
-
-  // Hora do dia para saudação contextual
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite'
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="min-h-screen flex flex-col bg-[#FAF8F3]">
 
-      {/* ── Nav ──────────────────────────────────────────── */}
-      <nav className="sapa-nav">
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '14px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
-          
-          {/* Logo + Nav Links */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{
-                width: 38, height: 38,
-                background: 'var(--terra)',
-                borderRadius: 10,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 4px 12px -2px rgba(196,98,45,0.4)',
-              }}>
-                <BookOpen size={18} color="#fff" strokeWidth={2} />
+      {/* ── Nav ── */}
+      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-[#E8E0D4]">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-3.5 flex justify-between items-center gap-4">
+          <div className="flex items-center gap-4 md:gap-8">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 bg-[#C4622D] rounded-xl flex items-center justify-center text-white shadow-lg shadow-[#C4622D]/30">
+                <BookOpen size={18} strokeWidth={2.5} />
               </div>
-              <span className="font-display" style={{ fontSize: 22, fontWeight: 900, color: 'var(--graphite)', letterSpacing: '-0.02em' }}>
+              <span className="font-display text-xl md:text-2xl font-black text-[#1C1917] tracking-tight hidden sm:block">
                 SAPA
               </span>
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 2, background: 'var(--cream-dark)', padding: '4px', borderRadius: 12, border: '1px solid var(--stone)' }}>
-              <button className="nav-pill-active" style={{ padding: '6px 16px', fontSize: 13 }}>Dashboard</button>
-              <Link href="/historico" className="nav-pill" style={{ padding: '6px 16px', fontSize: 13, textDecoration: 'none', display: 'block' }}>Planos</Link>
-              <Link href="/gerador" className="nav-pill" style={{ padding: '6px 16px', fontSize: 13, textDecoration: 'none', display: 'block' }}>Gerador</Link>
+            <div className="flex items-center gap-1 bg-[#F2EEE6] p-1 rounded-xl border border-[#E8E0D4]">
+              <button className="bg-white text-[#1C1917] shadow-sm px-3 md:px-4 py-1.5 text-[11px] md:text-xs rounded-lg font-bold">Painel</button>
+              <Link href="/historico" className="text-[#8C7B70] hover:text-[#1C1917] px-3 md:px-4 py-1.5 text-[11px] md:text-xs hidden sm:block transition-colors">Planos</Link>
+              <Link href="/gerador" className="text-[#8C7B70] hover:text-[#1C1917] px-3 md:px-4 py-1.5 text-[11px] md:text-xs transition-colors">Novo</Link>
             </div>
           </div>
-
-          {/* Search + Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ position: 'relative', display: 'none' }} className="lg-search">
-              <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted-light)' }} size={14} />
-              <input
-                type="text"
-                placeholder="Buscar planos..."
-                className="sapa-input"
-                style={{ width: 240 }}
-              />
+          <Link href="/perfil" className="flex items-center gap-2 group">
+            <div className="w-9 h-9 bg-[#C4622D] rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md group-hover:scale-105 transition-transform">
+              {initials}
             </div>
-
-            <button
-              style={{ padding: 9, borderRadius: 10, border: '1px solid var(--stone)', background: 'transparent', cursor: 'pointer', color: 'var(--muted)', display: 'flex', transition: 'color 0.2s' }}
-              title="Notificações"
-            >
-              <Bell size={18} />
-            </button>
-
-            <Link href="/perfil" title="Perfil">
-              <div style={{
-                width: 38, height: 38,
-                background: 'var(--terra)',
-                borderRadius: '50%',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontWeight: 700, fontSize: 13,
-                cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(196,98,45,0.3)',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                letterSpacing: '0.02em',
-              }}>
-                {initials}
-              </div>
-            </Link>
-          </div>
+          </Link>
         </div>
       </nav>
 
-      {/* ── Main ─────────────────────────────────────────── */}
-      <main style={{ flex: 1, maxWidth: 1200, margin: '0 auto', width: '100%', padding: '40px 24px 60px' }}>
+      {/* ── Main ── */}
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 md:px-6 py-24 md:py-28">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6">
 
-        {/* ── Header ── */}
-        <header className="animate-fade-up" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 24, marginBottom: 40, flexWrap: 'wrap' }}>
-          <div>
-            <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--terra)', marginBottom: 4, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              {greeting}, Prof. {nome || 'Professor'}
-              {escola && <span style={{ color: 'var(--muted)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}> · {escola}</span>}
-            </p>
-            <h1 className="font-display" style={{ fontSize: 38, fontWeight: 900, color: 'var(--graphite)', lineHeight: 1.1, letterSpacing: '-0.02em', margin: 0 }}>
-              Painel de<br />Controle
-            </h1>
-          </div>
-          <Link href="/gerador">
-            <button className="btn-primary">
-              <PlusCircle size={18} />
-              Criar Novo Plano
-            </button>
-          </Link>
-        </header>
-
-        {/* ── Grid ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 20 }}>
-
-          {/* ── Card de Créditos (dark hero) ── */}
-          <div className="sapa-card-dark animate-fade-up delay-1" style={{ gridColumn: 'span 4', padding: '20px 22px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 16 }}>
-            {/* Orb decorativo */}
-            <div style={{
-              position: 'absolute', top: -40, right: -40, width: 140, height: 140,
-              background: 'rgba(196,98,45,0.2)', borderRadius: '50%', filter: 'blur(50px)',
-              animation: 'pulseOrb 4s ease-in-out infinite',
-            }} />
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <span className="badge badge-terra" style={{ background: 'rgba(196,98,45,0.25)', color: '#E8A07A' }}>Plano Free</span>
-                <Sparkles size={14} color="rgba(255,255,255,0.3)" />
-              </div>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.40)', marginBottom: 4 }}>Créditos de Geração</p>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-                <span className="stat-value" style={{ fontSize: 40 }}>{String(creditos).padStart(2, '0')}</span>
-                <span style={{ fontSize: 18, color: 'rgba(255,255,255,0.28)', fontWeight: 300, fontFamily: 'DM Sans' }}>/&thinsp;05</span>
-              </div>
+          {/* ── Banner de Boas-Vindas ── */}
+          <div className="col-span-1 md:col-span-12 p-6 md:p-8 bg-[#3D2B1F] rounded-[32px] relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-xl shadow-[#3D2B1F]/20">
+            <div className="absolute top-[-40px] right-[-40px] w-48 h-48 bg-[#C4622D]/10 rounded-full blur-[60px]" />
+            <div className="relative z-10">
+              <p className="text-[11px] font-black text-white/40 uppercase tracking-widest mb-1">{greeting}</p>
+              <h1 className="font-display text-2xl md:text-3xl font-black text-white leading-tight tracking-tight mb-1">
+                Prof. {nome.split(' ')[0] || 'Professor'}
+              </h1>
+              {escola && <p className="text-sm text-white/40 font-medium mb-4">{escola}</p>}
+              {isFull ? (
+                <span className="inline-flex items-center gap-1.5 bg-[#C4622D]/25 text-[#E07A4A] border border-[#C4622D]/30 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
+                  ✦ Plano Full · {creditos} créditos
+                </span>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-white/40 text-[10px] font-black uppercase tracking-widest">Free</span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-white font-black text-lg">{creditos}</span>
+                      <span className="text-white/30 text-sm">/ 5</span>
+                    </div>
+                  </div>
+                  <div className="w-48 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-[#C4622D] rounded-full" style={{ width: `${Math.min((creditos / 5) * 100, 100)}%` }} />
+                  </div>
+                </div>
+              )}
             </div>
-
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div className="progress-track" style={{ marginBottom: 10 }}>
-                <div className="progress-fill" style={{ width: `${(creditos / 5) * 100}%` }} />
-              </div>
-              <button style={{
-                width: '100%', padding: '9px 0',
-                background: 'rgba(255,255,255,0.97)',
-                color: 'var(--bark)',
-                fontFamily: 'DM Sans, sans-serif',
-                fontWeight: 700, fontSize: 11,
-                letterSpacing: '0.06em', textTransform: 'uppercase',
-                border: 'none', borderRadius: 10, cursor: 'pointer',
-                transition: 'background 0.2s',
-              }}>
-                <Link href="/planos" style={{ color: 'var(--bark)', textDecoration: 'none', display: 'block' }}>
+            <div className="relative z-10 flex flex-col items-start md:items-end gap-3 w-full md:w-auto">
+              <Link href="/gerador" className="w-full md:w-auto">
+                <button className="w-full md:w-auto px-8 py-4 bg-[#C4622D] text-white rounded-2xl flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest shadow-xl shadow-[#C4622D]/20 hover:bg-[#9C4A1F] transition-all">
+                  <PlusCircle size={18} />
+                  Novo Plano
+                </button>
+              </Link>
+              {!isFull && (
+                <Link href="/planos" className="w-full md:w-auto text-center text-[10px] font-black text-white/40 hover:text-[#E07A4A] transition-colors uppercase tracking-widest">
                   Fazer Upgrade →
                 </Link>
-              </button>
+              )}
+            </div>
+          </div>
+
+          {/* ── Stats Row ── */}
+          <div className="col-span-1 md:col-span-6 p-6 bg-white border border-[#E8E0D4] rounded-[32px] shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-[#5A7A5A]/10 rounded-2xl flex items-center justify-center text-[#5A7A5A] flex-shrink-0">
+                <BarChart3 size={24} />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-[#8C7B70] uppercase tracking-widest mb-0.5">Total gerado</p>
+                <p className="text-3xl font-black text-[#1C1917] leading-none mb-1">{totalGerado}</p>
+                <span className="text-[9px] font-black uppercase text-[#5A7A5A] bg-[#5A7A5A]/10 px-2 py-0.5 rounded">Planos criados</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-span-1 md:col-span-6 p-6 bg-white border border-[#E8E0D4] rounded-[32px] shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-[#C89B3C]/10 rounded-2xl flex items-center justify-center text-[#C89B3C] flex-shrink-0">
+                <CalendarDays size={24} />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-[#8C7B70] uppercase tracking-widest mb-0.5">Esta semana</p>
+                <p className="text-3xl font-black text-[#1C1917] leading-none mb-1">{geradosSemana}</p>
+                <span className="text-[9px] font-black uppercase text-[#C89B3C] bg-[#C89B3C]/10 px-2 py-0.5 rounded">Novos planos</span>
+              </div>
             </div>
           </div>
 
           {/* ── Histórico Recente ── */}
-          <div className="sapa-card animate-fade-up delay-2" style={{ gridColumn: 'span 8', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--stone)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--graphite)', display: 'flex', alignItems: 'center', gap: 7 }}>
-                <Clock size={15} color="var(--terra)" strokeWidth={2} />
+          <div className="col-span-1 md:col-span-12 bg-white border border-[#E8E0D4] rounded-[32px] flex flex-col overflow-hidden shadow-sm">
+            <div className="px-6 py-4 border-b border-[#E8E0D4] flex justify-between items-center">
+              <h2 className="text-xs md:text-sm font-black text-[#1C1917] flex items-center gap-2 uppercase tracking-widest">
+                <div className="w-1.5 h-1.5 bg-[#C4622D] rounded-full" />
                 Histórico Recente
               </h2>
-              <Link href="/historico" style={{ fontSize: 12, fontWeight: 700, color: 'var(--terra)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 3 }}>
-                Ver tudo <ChevronRight size={13} />
+              <Link href="/historico" className="text-[11px] font-bold text-[#C4622D] hover:underline flex items-center gap-1">
+                Ver tudo <ChevronRight size={14} />
               </Link>
             </div>
 
-            {/* Lista de Histórico ou Empty State */}
             {historicoRecente.length > 0 ? (
-              <div style={{ flex: 1, padding: '10px 0' }}>
+              <div className="divide-y divide-[#E8E0D4]/50">
                 {historicoRecente.map((plano) => (
-                  <div key={plano.id} style={{
-                    padding: '12px 20px',
-                    borderBottom: '1px solid var(--stone-light)',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <div style={{ width: 32, height: 32, background: 'var(--cream-dark)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <FileText size={14} color="var(--muted)" />
+                  <div key={plano.id} className="p-4 md:px-6 md:py-4 flex justify-between items-center hover:bg-[#FAF8F3] transition-colors">
+                    <div className="flex items-center gap-3 md:gap-4">
+                      <div className="w-10 h-10 bg-[#F2EEE6] rounded-xl flex items-center justify-center text-[#8C7B70]">
+                        <FileText size={18} />
                       </div>
                       <div>
-                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--graphite)' }}>{plano.componente}</p>
-                        <p style={{ margin: 0, fontSize: 11, color: 'var(--muted)' }}>Semana {plano.semana} · {new Date(plano.created_at).toLocaleDateString('pt-BR')}</p>
+                        <p className="text-xs md:text-sm font-bold text-[#1C1917] line-clamp-1">
+                          {plano.componente} · Semana {plano.semana}
+                        </p>
+                        <p className="text-[10px] md:text-[11px] text-[#8C7B70] font-medium">
+                          {plano.turma && `${plano.turma} · `}
+                          {plano.bimestre && `${plano.bimestre}º Bim · `}
+                          {new Date(plano.created_at).toLocaleDateString('pt-BR')}
+                        </p>
                       </div>
                     </div>
                     <a href={plano.arquivo_url} target="_blank" rel="noopener noreferrer">
-                      <button className="btn-ghost" style={{ padding: '6px 12px', fontSize: 11 }}>Baixar</button>
+                      <button className="px-4 py-2 border-2 border-[#E8E0D4] text-[#C4622D] font-black text-[10px] uppercase tracking-widest rounded-lg hover:bg-[#FAF8F3] transition-colors">
+                        ↓ Word
+                      </button>
                     </a>
                   </div>
                 ))}
               </div>
             ) : (
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '28px 24px', textAlign: 'center' }}>
-                <div className="empty-eye" style={{ marginBottom: 14, width: 44, height: 44, borderRadius: 12 }}>
-                  <FileText size={20} />
+              <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-12 text-center">
+                <div className="w-12 h-12 bg-[#F2EEE6] rounded-xl flex items-center justify-center text-[#B5A89A] mb-4">
+                  <FileText size={24} />
                 </div>
-                <h3 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 700, color: 'var(--graphite)' }}>
-                  Inicie sua primeira geração
-                </h3>
-                <p style={{ margin: '0 0 24px', fontSize: 14, color: 'var(--muted)', maxWidth: 340, lineHeight: 1.6 }}>
-                  Seus planos gerados aparecerão aqui para download e edição rápida — prontos na hora em que você precisar.
+                <h3 className="text-sm md:text-base font-bold text-[#1C1917] mb-2">Inicie sua primeira geração</h3>
+                <p className="text-xs md:text-sm text-[#8C7B70] max-w-xs mx-auto leading-relaxed mb-6 font-medium">
+                  Seus planos gerados aparecerão aqui para download rápido.
                 </p>
                 <Link href="/gerador">
-                  <button className="btn-ghost">
-                    <Zap size={14} />
+                  <button className="px-6 py-2.5 border-2 border-[#C4622D] text-[#C4622D] font-black text-xs uppercase tracking-widest rounded-xl hover:bg-[#FAF8F3] transition-all">
                     Começar Agora
                   </button>
                 </Link>
@@ -239,117 +214,16 @@ export default async function Home() {
             )}
           </div>
 
-          {/* ── Card Stats Row ── */}
-          <div className="sapa-card animate-fade-up delay-3" style={{ gridColumn: 'span 4', padding: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-              <div style={{ width: 44, height: 44, background: 'rgba(90,122,90,0.10)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <BarChart3 size={20} color="var(--sage)" />
-              </div>
-              <div>
-                <p style={{ margin: '0 0 2px', fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Total gerado</p>
-                <p className="font-display" style={{ margin: '0 0 4px', fontSize: 32, fontWeight: 900, color: 'var(--graphite)', lineHeight: 1 }}>{totalGerado}</p>
-                <span className="badge badge-sage" style={{ fontSize: 10 }}>Planos criados</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="sapa-card animate-fade-up delay-3" style={{ gridColumn: 'span 4', padding: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-              <div style={{ width: 44, height: 44, background: 'rgba(200,155,60,0.10)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <CalendarDays size={20} color="var(--gold)" />
-              </div>
-              <div>
-                <p style={{ margin: '0 0 2px', fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Esta semana</p>
-                <p className="font-display" style={{ margin: '0 0 4px', fontSize: 32, fontWeight: 900, color: 'var(--graphite)', lineHeight: 1 }}>{geradosSemana}</p>
-                <span className="badge badge-gold" style={{ fontSize: 10 }}>Novos planos</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="sapa-card animate-fade-up delay-3" style={{ gridColumn: 'span 4', padding: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-              <div style={{ width: 44, height: 44, background: 'rgba(196,98,45,0.10)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Zap size={20} color="var(--terra)" />
-              </div>
-              <div>
-                <p style={{ margin: '0 0 2px', fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Créditos</p>
-                <p className="font-display" style={{ margin: '0 0 4px', fontSize: 32, fontWeight: 900, color: 'var(--graphite)', lineHeight: 1 }}>{creditos}</p>
-                <span className="badge badge-terra" style={{ fontSize: 10 }}>Disponíveis</span>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Dica de Produtividade ── */}
-          <div className="animate-fade-up delay-4" style={{
-            gridColumn: 'span 6', padding: 24,
-            background: 'linear-gradient(135deg, rgba(90,122,90,0.08) 0%, rgba(90,122,90,0.04) 100%)',
-            border: '1px solid rgba(90,122,90,0.18)',
-            borderRadius: 'var(--radius-card)',
-          }}>
-            <div style={{ display: 'flex', gap: 16 }}>
-              <div style={{ width: 48, height: 48, background: 'var(--sage)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 12px -2px rgba(90,122,90,0.4)' }}>
-                <Zap size={20} color="#fff" strokeWidth={2} />
-              </div>
-              <div>
-                <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 700, color: '#2E4A2E', lineHeight: 1.3 }}>Dica de Produtividade</h4>
-                <p style={{ margin: 0, fontSize: 13.5, color: 'rgba(46,74,46,0.75)', lineHeight: 1.6 }}>
-                  Selecione <strong>múltiplas semanas</strong> de uma vez para gerar o cronograma completo do bimestre em segundos.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Suporte ao Template ── */}
-          <div className="animate-fade-up delay-5" style={{
-            gridColumn: 'span 6', padding: 24,
-            background: 'linear-gradient(135deg, rgba(200,155,60,0.08) 0%, rgba(200,155,60,0.04) 100%)',
-            border: '1px solid rgba(200,155,60,0.2)',
-            borderRadius: 'var(--radius-card)',
-          }}>
-            <div style={{ display: 'flex', gap: 16 }}>
-              <div style={{ width: 48, height: 48, background: 'var(--gold)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 12px -2px rgba(200,155,60,0.4)' }}>
-                <FileText size={20} color="#fff" strokeWidth={2} />
-              </div>
-              <div>
-                <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 700, color: '#5C3D0A', lineHeight: 1.3 }}>Suporte ao Template</h4>
-                <p style={{ margin: 0, fontSize: 13.5, color: 'rgba(92,61,10,0.75)', lineHeight: 1.6 }}>
-                  Adicione tags como <code style={{ background: 'rgba(255,255,255,0.55)', padding: '1px 6px', borderRadius: 5, fontFamily: 'monospace', fontSize: 12, color: '#9A6E1A' }}>{'{desenvolvimento}'}</code> no seu Word para preenchimento automático.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* ── CTA Banner ── */}
-          <div className="animate-fade-up delay-5" style={{
-            gridColumn: 'span 12',
-            padding: '24px 32px',
-            background: 'var(--bark)',
-            borderRadius: 'var(--radius-card)',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap',
-          }}>
-            <div>
-              <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>Pronto para começar?</p>
-              <p className="font-display" style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#fff', lineHeight: 1.3 }}>
-                Crie seu primeiro plano de aula agora.
-              </p>
-            </div>
-            <Link href="/gerador">
-              <button className="btn-primary" style={{ background: 'var(--terra)', flexShrink: 0 }}>
-                Ir para o Gerador <ArrowRight size={16} />
-              </button>
-            </Link>
-          </div>
-
         </div>
       </main>
 
       {/* ── Footer ── */}
-      <footer style={{ borderTop: '1px solid var(--stone)', padding: '24px', background: '#fff' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-          <p style={{ margin: 0, fontSize: 12, color: 'var(--muted-light)', fontWeight: 500 }}>© 2026 SAPA. Todos os direitos reservados.</p>
-          <div style={{ display: 'flex', gap: 24 }}>
+      <footer className="border-t border-[#E8E0D4] py-8 bg-white mt-12">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-[11px] font-bold text-[#8C7B70] uppercase tracking-widest">© 2026 SAPA. Todos os direitos reservados.</p>
+          <div className="flex gap-8">
             {['Termos', 'Privacidade', 'Suporte'].map(item => (
-              <Link key={item} href="#" style={{ fontSize: 12, color: 'var(--muted-light)', textDecoration: 'none', fontWeight: 500, transition: 'color 0.2s' }}>
+              <Link key={item} href="#" className="text-[11px] font-black text-[#8C7B70] uppercase tracking-[0.15em] hover:text-[#C4622D] transition-colors">
                 {item}
               </Link>
             ))}
