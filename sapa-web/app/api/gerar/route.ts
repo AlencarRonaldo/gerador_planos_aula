@@ -70,6 +70,9 @@ REGRAS:
     return NextResponse.json({ content: text.trim() });
   } catch (error: any) {
     console.error("Erro na API de geração:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const errorMessage = error.message?.includes('api') 
+      ? "Erro na configuração da API. Entre em contato com o suporte."
+      : error.message;
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
