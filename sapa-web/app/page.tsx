@@ -84,15 +84,15 @@ export default async function Home() {
       </nav>
 
       {/* ── Main ── */}
-      <main className="flex-1 max-w-6xl mx-auto w-full px-4 md:px-6 py-24 md:py-28">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6">
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 md:px-6 py-16 md:py-20">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5">
 
           {/* ── Banner de Boas-Vindas ── */}
-          <div className="col-span-1 md:col-span-12 p-6 md:p-8 bg-[#3D2B1F] rounded-[32px] relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-xl shadow-[#3D2B1F]/20">
-            <div className="absolute top-[-40px] right-[-40px] w-48 h-48 bg-[#C4622D]/10 rounded-full blur-[60px]" />
+          <div className="col-span-1 md:col-span-12 p-4 md:p-6 bg-[#3D2B1F] rounded-[24px] relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xl shadow-[#3D2B1F]/20">
+            <div className="absolute top-[-30px] right-[-30px] w-36 h-36 bg-[#C4622D]/10 rounded-full blur-[50px]" />
             <div className="relative z-10">
-              <p className="text-[11px] font-black text-white/40 uppercase tracking-widest mb-1">{greeting}</p>
-              <h1 className="font-display text-2xl md:text-3xl font-black text-white leading-tight tracking-tight mb-1">
+              <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-0.5">{greeting}</p>
+              <h1 className="font-display text-xl md:text-2xl font-black text-white leading-tight tracking-tight mb-0.5">
                 Prof. {nome.split(' ')[0] || 'Professor'}
               </h1>
               {escola && <p className="text-sm text-white/40 font-medium mb-4">{escola}</p>}
@@ -115,10 +115,10 @@ export default async function Home() {
                 </div>
               )}
             </div>
-            <div className="relative z-10 flex flex-col items-start md:items-end gap-3 w-full md:w-auto">
+            <div className="relative z-10 flex flex-col items-start md:items-end gap-2 w-full md:w-auto">
               <Link href="/gerador" className="w-full md:w-auto">
-                <button className="w-full md:w-auto px-8 py-4 bg-[#C4622D] text-white rounded-2xl flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest shadow-xl shadow-[#C4622D]/20 hover:bg-[#9C4A1F] transition-all">
-                  <PlusCircle size={18} />
+                <button className="w-full md:w-auto px-6 py-3 bg-[#C4622D] text-white rounded-xl flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest shadow-lg shadow-[#C4622D]/20 hover:bg-[#9C4A1F] transition-all">
+                  <PlusCircle size={16} />
                   Novo Plano
                 </button>
               </Link>
@@ -131,41 +131,41 @@ export default async function Home() {
           </div>
 
           {/* ── Stats Row ── */}
-          <div className="col-span-1 md:col-span-6 p-6 bg-white border border-[#E8E0D4] rounded-[32px] shadow-sm">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-[#5A7A5A]/10 rounded-2xl flex items-center justify-center text-[#5A7A5A] flex-shrink-0">
-                <BarChart3 size={24} />
+          <div className="col-span-1 md:col-span-6 p-4 md:p-5 bg-white border border-[#E8E0D4] rounded-[24px] shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[#5A7A5A]/10 rounded-xl flex items-center justify-center text-[#5A7A5A] flex-shrink-0">
+                <BarChart3 size={20} />
               </div>
               <div>
-                <p className="text-[10px] font-black text-[#8C7B70] uppercase tracking-widest mb-0.5">Total gerado</p>
-                <p className="text-3xl font-black text-[#1C1917] leading-none mb-1">{totalGerado}</p>
-                <span className="text-[9px] font-black uppercase text-[#5A7A5A] bg-[#5A7A5A]/10 px-2 py-0.5 rounded">Planos criados</span>
+                <p className="text-[9px] font-black text-[#8C7B70] uppercase tracking-widest mb-0.5">Total gerado</p>
+                <p className="text-2xl font-black text-[#1C1917] leading-none mb-0.5">{totalGerado}</p>
+                <span className="text-[8px] font-black uppercase text-[#5A7A5A] bg-[#5A7A5A]/10 px-1.5 py-0.5 rounded">Planos criados</span>
               </div>
             </div>
           </div>
 
-          <div className="col-span-1 md:col-span-6 p-6 bg-white border border-[#E8E0D4] rounded-[32px] shadow-sm">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-[#C89B3C]/10 rounded-2xl flex items-center justify-center text-[#C89B3C] flex-shrink-0">
-                <CalendarDays size={24} />
+          <div className="col-span-1 md:col-span-6 p-4 md:p-5 bg-white border border-[#E8E0D4] rounded-[24px] shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[#C89B3C]/10 rounded-xl flex items-center justify-center text-[#C89B3C] flex-shrink-0">
+                <CalendarDays size={20} />
               </div>
               <div>
-                <p className="text-[10px] font-black text-[#8C7B70] uppercase tracking-widest mb-0.5">Esta semana</p>
-                <p className="text-3xl font-black text-[#1C1917] leading-none mb-1">{geradosSemana}</p>
-                <span className="text-[9px] font-black uppercase text-[#C89B3C] bg-[#C89B3C]/10 px-2 py-0.5 rounded">Novos planos</span>
+                <p className="text-[9px] font-black text-[#8C7B70] uppercase tracking-widest mb-0.5">Esta semana</p>
+                <p className="text-2xl font-black text-[#1C1917] leading-none mb-0.5">{geradosSemana}</p>
+                <span className="text-[8px] font-black uppercase text-[#C89B3C] bg-[#C89B3C]/10 px-1.5 py-0.5 rounded">Novos planos</span>
               </div>
             </div>
           </div>
 
           {/* ── Histórico Recente ── */}
-          <div className="col-span-1 md:col-span-12 bg-white border border-[#E8E0D4] rounded-[32px] flex flex-col overflow-hidden shadow-sm">
-            <div className="px-6 py-4 border-b border-[#E8E0D4] flex justify-between items-center">
-              <h2 className="text-xs md:text-sm font-black text-[#1C1917] flex items-center gap-2 uppercase tracking-widest">
-                <div className="w-1.5 h-1.5 bg-[#C4622D] rounded-full" />
+          <div className="col-span-1 md:col-span-12 bg-white border border-[#E8E0D4] rounded-[24px] flex flex-col overflow-hidden shadow-sm">
+            <div className="px-4 md:px-5 py-3 border-b border-[#E8E0D4] flex justify-between items-center">
+              <h2 className="text-xs font-black text-[#1C1917] flex items-center gap-2 uppercase tracking-widest">
+                <div className="w-1 h-1 bg-[#C4622D] rounded-full" />
                 Histórico Recente
               </h2>
-              <Link href="/historico" className="text-[11px] font-bold text-[#C4622D] hover:underline flex items-center gap-1">
-                Ver tudo <ChevronRight size={14} />
+              <Link href="/historico" className="text-[10px] font-bold text-[#C4622D] hover:underline flex items-center gap-1">
+                Ver tudo <ChevronRight size={12} />
               </Link>
             </div>
 
@@ -205,8 +205,8 @@ export default async function Home() {
                 <p className="text-xs md:text-sm text-[#8C7B70] max-w-xs mx-auto leading-relaxed mb-6 font-medium">
                   Seus plano de aula aparecerão aqui para download rápido.
                 </p>
-                <Link href="/gerador">
-                  <button className="px-6 py-2.5 border-2 border-[#C4622D] text-[#C4622D] font-black text-xs uppercase tracking-widest rounded-xl hover:bg-[#FAF8F3] transition-all">
+                <Link href="/gerador" className="w-full md:w-auto">
+                  <button className="w-full md:w-auto px-5 py-2 border-2 border-[#C4622D] text-[#C4622D] font-black text-xs uppercase tracking-widest rounded-lg hover:bg-[#FAF8F3] transition-all">
                     Começar Agora
                   </button>
                 </Link>

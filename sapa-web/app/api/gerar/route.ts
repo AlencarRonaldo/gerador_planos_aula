@@ -34,13 +34,37 @@ export async function POST(req: Request) {
       : ""
 
     const promptText = `Você é um Coordenador Pedagógico e Professor Expert em Educação Profissional Técnica.
-Sua tarefa é elaborar o conteúdo para o componente: ${lessons[0].componente || 'Técnico'}.
+Sua tarefa é elaborar um plano de aula para o componente: ${lessons[0].componente || 'Técnico'}.
 ${refInstruction}
+
+ESTRUTURA PEDAGÓGICA OBRIGATÓRIA (Padrão Nova Escola):
+Para CADA aula de 50 minutos, siga rigorosamente:
+
+1. INTRODUÇÃO E ACOLHIMENTO (10 min):
+   - Proponha uma pergunta disparadora sobre o tema.
+   - Conexão com o objetivo: ${lessons[0].obj || lessons[0].objetivo || 'Aplicação profissional'}
+
+2. DESENVOLVIMENTO E PRÁTICA (30 min):
+   - Contextualização: Apresente um problema do mundo real relacionado ao tema.
+   - Mão na Massa: Atividade prática onde o aluno PRODUZ algo (código, cálculo, projeto, etc).
+   - Inclua instruções passo a passo.
+
+3. FECHAMENTO E SISTEMATIZAÇÃO (10 min):
+   - Avaliação formativa rápida (ex: Ticket de Saída, quiz rápido).
+   - Síntese dos conceitos trabalhados.
+
+REGRAS DE OURO:
+- Cada seção DEVE ter a duração indicada.
+- NÃO use frases genéricas como "o professor explicará o conteúdo".
+- Em vez disso, diga: "O professor demonstra no [recurso] como..."
+- Seja ultra-específico nos passos da atividade prática.
+- Mencione qual recurso usar: computador, lousa, projetor, etc.
+
 REFERÊNCIA PEDAGÓGICA: BNCC, Metodologias Ativas (PBL, Cooperativa) e Contexto Profissional.
-RECURSOS: Computadores, Lousa, Material Digital, Projetor.
 
 DADOS DA SEMANA:
 - Tema: ${lessons[0].tema || 'Conforme cronograma'}
+- Habilidades: ${lessons[0].hab || lessons[0].habilidades_tecnicas || ''}
 - Aulas: ${lessons.length} aulas de 50 min.
 
 AULAS PARA DESENVOLVER:
@@ -50,7 +74,7 @@ ${refText ? `\nCONTEÚDO DE REFERÊNCIA (TXT):\n${refText}\n` : ""}
 TAREFA: Gere o conteúdo dividido em 3 seções claras usando estas tags exatas:
 
 <DESENVOLVIMENTO>
-(Para cada aula, escreva Abertura, Desenvolvimento e Fechamento de forma detalhada e didática. Use apenas texto puro, sem markdown.)
+(Para cada aula, escreva as 3 etapas acima com tempos específicos. Use apenas texto puro, sem markdown.)
 </DESENVOLVIMENTO>
 
 <AEE>
