@@ -1,10 +1,11 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
+import itinerariosTecnicos from "../../../lib/bncc-itinerarios.json";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { lessons, apiKey, refBase64, refMimeType, refText } = body
+    const { lessons, apiKey, refBase64, refText } = body
 
     if (!lessons || !Array.isArray(lessons) || lessons.length === 0) {
       return NextResponse.json({ error: "Nenhuma aula informada." }, { status: 400 });
@@ -21,7 +22,23 @@ export async function POST(req: Request) {
     }
 
     const genAI = new GoogleGenerativeAI(finalKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }, { apiVersion: "v1" });
+
+    const componente = lessons[0].componente?.toLowerCase() || "";
+    let itinerariosInfo = "";
+    
+    for (const [key, curso] of Object.entries(itinerariosTecnicos.cursos)) {
+      const nome = (curso as any).nome.toLowerCase();
+      if (componente.includes(nome) || nome.includes(componente)) {
+        const c = curso as any;
+        itinerariosInfo = `
+ITINERÁRIO TÉCNICO - ${c.nome}:
+- Área: ${c.area} | Eixo: ${c.eixo}
+- Competências do curso: ${c.componentes.map((comp: any) => `${comp.nome}: ${comp.ementa}`).join(" | ")}
+`;
+        break;
+      }
+    }
 
     const context = lessons.map((l: any, i: number) =>
       `Aula ${i+1}: Tema="${l.titulo || l.titulo_aula}", Objetivo="${l.obj || l.objetivo}", Habilidades="${l.hab || l.habilidades_tecnicas}"`
@@ -36,6 +53,11 @@ export async function POST(req: Request) {
     const promptText = `Você é um Coordenador Pedagógico e Professor Expert em Educação Profissional Técnica.
 Sua tarefa é elaborar um plano de aula para o componente: ${lessons[0].componente || 'Técnico'}.
 ${refInstruction}
+
+REFERÊNCIA CURRICULAR OFICIAL (SEE-SP):
+- Use o Currículo em Ação da Secretaria da Educação do Estado de São Paulo
+- Acesse materiais em: https://repositorio.educacao.sp.gov.br/
+${itinerariosInfo}
 
 ESTRUTURA PEDAGÓGICA OBRIGATÓRIA (Padrão Nova Escola):
 Para CADA aula de 50 minutos, siga rigorosamente:
@@ -92,8 +114,9 @@ REGRAS:
 
     // Constrói o array de parts: PDF inline (se presente) + prompt
     const parts: any[] = []
-    if (refBase64 && refMimeType) {
-      parts.push({ inlineData: { data: refBase64, mimeType: refMimeType } })
+    if (refBase64) {
+      const mimeType = refBase64.includes(",") ? "application/pdf" : "application/pdf"
+      parts.push({ inlineData: { data: refBase64, mimeType } })
     }
     parts.push({ text: promptText })
 

@@ -21,6 +21,7 @@ import Link from 'next/link'
 import { FileUpload } from '../../components/file-upload'
 import * as XLSX from 'xlsx'
 import { fillWordTemplate, gerarNomeArquivo } from '../../lib/gerador'
+import { gerarComTemplate, TEMPLATES_INFO, type TemplateId } from '../../lib/templates-docx'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 import { supabase } from '../../lib/supabase'
@@ -44,6 +45,7 @@ export default function GeradorPage() {
   const [excelFile, setExcelFile] = useState<File | null>(null)
   const [wordFile, setWordFile] = useState<File | null>(null)
   const [refFile, setRefFile] = useState<File | null>(null)
+  const [templateSelecionado, setTemplateSelecionado] = useState<TemplateId | null>('classico')
 
   const [abas, setAbas] = useState<string[]>([])
   const [abaSel, setAbaSel] = useState('')
@@ -228,7 +230,7 @@ export default function GeradorPage() {
   const handleDownloadWords = async () => {
     setIsGenerating(true)
     const zip = new JSZip()
-    const templateBuffer = await wordFile!.arrayBuffer()
+    const templateBuffer = wordFile ? await wordFile.arrayBuffer() : null
     const { data: { user } } = await supabase.auth.getUser()
 
     try {
@@ -239,11 +241,24 @@ export default function GeradorPage() {
           const fullContent = `<DESENVOLVIMENTO>\n${draft.desenvolvimento}\n</DESENVOLVIMENTO>\n<AEE>\n${draft.aee}\n</AEE>\n<EXERCICIOS>\n${draft.exercicios}\n</EXERCICIOS>`
           const objetivosStr = weekLessons.map((l, i) => `Aula ${i+1}: ${l.obj || l.objetivo}`).join('\n')
 
-          const docBlob = await fillWordTemplate(templateBuffer, {
-            escola, professor, turma, componente: compSel, bimestre: bimSel, semana: w, 
-            tema: weekLessons[0].tema, objetivos: objetivosStr, natureza: weekLessons[0].natureza || 'Teórica/Prática', 
-            desenvolvimento: fullContent
-          })
+          let docBlob: Blob
+
+          if (templateBuffer) {
+            // Usa template Word do usuário (fluxo original)
+            docBlob = await fillWordTemplate(templateBuffer, {
+              escola, professor, turma, componente: compSel, bimestre: bimSel, semana: w,
+              tema: weekLessons[0].tema, objetivos: objetivosStr, natureza: weekLessons[0].natureza || 'Teórica/Prática',
+              desenvolvimento: fullContent
+            })
+          } else {
+            // Usa template premium embutido
+            const { desenvolvimento, aee, exercicios } = draft
+            docBlob = await gerarComTemplate(templateSelecionado!, {
+              escola, professor, turma, componente: compSel, bimestre: bimSel, semana: w,
+              tema: weekLessons[0].tema, objetivos: objetivosStr, natureza: weekLessons[0].natureza || 'Teórica/Prática',
+              desenvolvimento, aee, exercicios
+            })
+          }
           
           const filename = gerarNomeArquivo(turma, w, compSel)
           zip.file(filename, docBlob)
@@ -369,19 +384,105 @@ export default function GeradorPage() {
               <span className="text-[10px] font-black uppercase text-[#C4622D] tracking-widest bg-[#C4622D]/10 px-2 py-0.5 rounded">Passo 02</span>
               <h2 className="text-2xl md:text-3xl font-black text-[#1C1917] tracking-tight">Arquivos Base</h2>
             </header>
+
+            {/* Seletor de Templates Premium */}
+            <div className="bg-white rounded-[28px] border border-[#E8E0D4] p-5 md:p-6 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-black uppercase text-[#C4622D] tracking-widest">Templates Premium</p>
+                  <p className="text-sm font-black text-[#1C1917] mt-0.5">Escolha o layout do seu plano de aula</p>
+                </div>
+                {wordFile && (
+                  <span className="text-[9px] font-black bg-amber-100 text-amber-700 px-2 py-1 rounded-full uppercase tracking-wide">Usando seu .docx</span>
+                )}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {TEMPLATES_INFO.map(t => (
+                  <div
+                    key={t.id}
+                    onClick={() => { setTemplateSelecionado(t.id); setWordFile(null) }}
+                    className={`relative p-4 rounded-2xl border-2 cursor-pointer transition-all hover:scale-[1.01] ${
+                      templateSelecionado === t.id && !wordFile
+                        ? 'border-[#C4622D] bg-[#C4622D]/[0.03] shadow-md shadow-[#C4622D]/10'
+                        : 'border-[#E8E0D4] bg-[#FAFAF8] hover:border-[#C4622D]/40'
+                    }`}
+                  >
+                    {/* Preview de cor */}
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-5 h-5 rounded-full border-2 border-white shadow" style={{ background: t.preview }} />
+                      <div className="w-3 h-3 rounded-full border-2 border-white shadow" style={{ background: t.previewAlt }} />
+                      {templateSelecionado === t.id && !wordFile && (
+                        <CheckCircle size={14} className="ml-auto text-[#C4622D]" strokeWidth={3} />
+                      )}
+                    </div>
+                    {/* Preview visual miniaturo */}
+                    <div className="w-full h-16 rounded-lg mb-3 overflow-hidden border border-[#E8E0D4]">
+                      {t.id === 'classico' && (
+                        <div className="h-full flex flex-col">
+                          <div className="h-4 w-full" style={{ background: t.preview }} />
+                          <div className="flex-1 p-1 space-y-1">
+                            <div className="h-1.5 w-3/4 rounded" style={{ background: t.previewAlt, opacity: 0.6 }} />
+                            <div className="h-1 w-full rounded bg-[#E8E0D4]" />
+                            <div className="h-1 w-5/6 rounded bg-[#E8E0D4]" />
+                            <div className="h-1 w-4/5 rounded bg-[#E8E0D4]" />
+                          </div>
+                        </div>
+                      )}
+                      {t.id === 'contemporaneo' && (
+                        <div className="h-full flex flex-col">
+                          <div className="h-3 w-full" style={{ background: t.preview }} />
+                          <div className="flex-1 p-1 space-y-1">
+                            <div className="flex items-center gap-1">
+                              <div className="w-1 h-3 rounded" style={{ background: t.preview }} />
+                              <div className="h-1.5 w-2/3 rounded" style={{ background: '#E8E0D4' }} />
+                            </div>
+                            <div className="h-1 w-full rounded" style={{ background: t.previewAlt }} />
+                            <div className="h-1 w-5/6 rounded" style={{ background: t.previewAlt }} />
+                          </div>
+                        </div>
+                      )}
+                      {t.id === 'minimalista' && (
+                        <div className="h-full p-1.5 space-y-1">
+                          <div className="h-1.5 w-full rounded border-b border-[#DDDDDD]" style={{ background: t.previewAlt }} />
+                          <div className="h-1 w-3/4 rounded bg-[#DDDDDD]" />
+                          <div className="h-1 w-full rounded bg-[#EEEEEE]" />
+                          <div className="h-1 w-5/6 rounded bg-[#EEEEEE]" />
+                          <div className="h-1 w-4/5 rounded bg-[#EEEEEE]" />
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-[11px] font-black text-[#1C1917] uppercase tracking-tight">{t.nome}</p>
+                    <p className="text-[10px] text-[#8C7B70] mt-0.5 leading-snug font-medium">{t.descricao}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-[#8C7B70] font-medium">
+                Ou faça upload do seu próprio modelo .docx abaixo — ele substituirá o template selecionado.
+              </p>
+            </div>
+
+            {/* Upload de arquivos */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
               <FileUpload label={"Escopo\nSequência"} description=".xlsx" accept={{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx']}} file={excelFile} onFileSelect={setExcelFile} color="terra" />
-              <FileUpload label="Modelo de Plano de Aula" description=".docx" accept={{'application/vnd.openxmlformats-officedocument.wordprocessingml.document':['.docx']}} file={wordFile} onFileSelect={setWordFile} color="gold" />
+              <FileUpload
+                label="Seu Modelo .docx"
+                description="opcional · substitui template"
+                accept={{'application/vnd.openxmlformats-officedocument.wordprocessingml.document':['.docx']}}
+                file={wordFile}
+                onFileSelect={(f) => { setWordFile(f); if (f) setTemplateSelecionado(null) }}
+                color="gold"
+              />
               <FileUpload label="Material Digital" description="PDF ou TXT · opcional" accept={{'application/pdf':['.pdf'],'text/plain':['.txt']}} file={refFile} onFileSelect={setRefFile} color="sage" />
             </div>
+
             <div className="bg-[#F2EEE6] border border-[#E8E0D4] rounded-2xl p-4 text-sm text-[#8C7B70] leading-relaxed space-y-1">
               <p><span className="font-black text-[#1C1917]">Escopo:</span> planilha .xlsx com componentes curriculares e semanas</p>
-              <p><span className="font-black text-[#1C1917]">Modelo:</span> seu arquivo .docx com o layout oficial da escola</p>
+              <p><span className="font-black text-[#1C1917]">Template:</span> escolha um premium acima ou faça upload do .docx da escola</p>
               <p><span className="font-black text-[#8C7B70]">Referência:</span> ementa ou apostila em PDF/TXT — opcional</p>
             </div>
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-8 md:mt-10">
               <button onClick={()=>setStep(1)} className="w-full md:w-auto px-8 py-3 border-2 border-[#E8E0D4] rounded-xl text-xs font-black text-[#8C7B70] uppercase tracking-widest hover:bg-[#F2EEE6] transition-all">Voltar</button>
-              <button onClick={()=>setStep(3)} disabled={!excelFile||!wordFile} className="w-full md:w-auto px-10 py-4 bg-[#C4622D] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#C4622D]/20">Continuar</button>
+              <button onClick={()=>setStep(3)} disabled={!excelFile || (!wordFile && !templateSelecionado)} className="w-full md:w-auto px-10 py-4 bg-[#C4622D] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#C4622D]/20 disabled:opacity-40">Continuar</button>
             </div>
           </div>
         )}

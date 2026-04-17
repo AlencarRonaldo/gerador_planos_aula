@@ -1,0 +1,33 @@
+{
+  "repositorio_url": "https://repositorio.educacao.sp.gov.br/",
+  "cmsp_url": "https://centrodemidiasp.educacao.sp.gov.br/",
+  "categorias": {
+    "materiais_digitais": {
+      "descricao": "Materiais pedagógicos em PDF e PPTX para download",
+      "url_base": "https://repositorio.educacao.sp.gov.br/",
+      "como_acessar": "1. Acesse o repositório | 2. Selecione ano letivo > etapa > série > componente | 3. Baixe o arquivo"
+    },
+    "videoaulas": {
+      "descricao": "Aulas gravadas e reprise",
+      "url_base": "https://centrodemidiasp.educacao.sp.gov.br/",
+      "como_acessar": "Acesse o CMSP App ou site, vá em Repositório > Vídeoaulas"
+    },
+    "pautas_formativas": {
+      "descricao": "Roteiros de aula para os professores",
+      "url_base": "https://repositorio.educacao.sp.gov.br/",
+      "como_acessar": "Same portal, filter by 'Pauta Formativa'"
+    }
+  },
+  "componentes_por_area": {
+    "linguagens": ["Língua Portuguesa", "Língua Inglesa", "Arte", "Educação Física"],
+    "matematica": ["Matemática"],
+    "ciencias_natureza": ["Física", "Química", "Biologia"],
+    "ciencias_humanas": ["História", "Geografia", "Filosofia", "Sociologia"],
+    "tecnico": ["Desenvolvimento de Sistemas", "Administração", "Enfermagem", "Logística", "Agronegórios", "Farmácia", "Ciência de Dados", "Vendas", "Hospedagem", "Eletrônica"]
+  },
+  "observacoes": [
+    "O acesso aos materiais requer login com email institucional @educacao.sp.gov.br",
+    "Materiais são atualizados semanalmente pela equipe pedagógica da SEE-SP",
+    "Recursos incluem: PDFs, PPTXs, vídeos, quizzes, roteiros de aula"
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "buildCommand": "NEXT_PUBLIC_SUPABASE_URL=https://bgijgonngrgnvffagsnd.supabase.co NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_tP6_IXGo71cpBFfxeI5oug_yIBdq3Ts GEMINI_API_KEY=AIzaSyA0qkT71Y-uwh6J1y99TqnWmmPRpewglHo npm run build",
+  "buildCommand": "npm run build",
   "installCommand": "npm install",
   "framework": "nextjs"
 }

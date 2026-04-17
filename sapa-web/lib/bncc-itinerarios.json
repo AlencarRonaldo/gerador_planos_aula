@@ -1,0 +1,387 @@
+{
+  "cursos": {
+    "desenvolvimento_sistemas": {
+      "nome": "Desenvolvimento de Sistemas",
+      "area": "Informação e Comunicação",
+      "eixo": "Tecnologia da Informação",
+      "competencias": [
+        "Analisar requisitos de sistemas",
+        "Projetar sistemas computacionais",
+        "Implementar sistemas utilizando linguagens de programação",
+        "Modelar e implementar bancos de dados",
+        "Testar e manter sistemas",
+        "Trabalhar em equipe ágil"
+      ],
+      "componentes": [
+        {
+          "nome": "Lógica e Linguagem de Programação",
+          "ano": 1,
+          "competencias": ["Aplicar lógica de programação", "Utilizar estruturas de dados"],
+          "ementa": "Algoritmos, estruturas de controle, vetores, matrizes, funções"
+        },
+        {
+          "nome": "Processos de Desenvolvimento de Software e Metodologias Ágeis",
+          "ano": 1,
+          "competencias": ["Aplicar metodologias ágeis", "Trabalhar em equipe"],
+          "ementa": "Scrum, Kanban, versionamento de código"
+        },
+        {
+          "nome": "Redes de Computadores e Segurança da Informação",
+          "ano": 1,
+          "competencias": ["Configurar redes", "Implementar segurança"],
+          "ementa": "TCP/IP, protocolos, segurança de dados"
+        },
+        {
+          "nome": "Programação Front-End",
+          "ano": 2,
+          "competencias": ["Desenvolver interfaces web", "Aplicar UX/UI"],
+          "ementa": "HTML, CSS, JavaScript, frameworks React/Vue"
+        },
+        {
+          "nome": "Programação Back-End",
+          "ano": 2,
+          "competencias": ["Desenvolver APIs", "Integrar sistemas"],
+          "ementa": "Node.js, Python, APIs REST"
+        },
+        {
+          "nome": "Modelagem e Desenvolvimento de Banco de Dados",
+          "ano": 2,
+          "competencias": ["Modelar bancos relacionais", "Implementar consultas SQL"],
+          "ementa": "SQL, PostgreSQL, modelagem ER"
+        },
+        {
+          "nome": "Banco de Dados NoSQL",
+          "ano": 2,
+          "competencias": ["Implementar bancos NoSQL"],
+          "ementa": "MongoDB, Firebase"
+        },
+        {
+          "nome": "Inteligência Artificial",
+          "ano": 1,
+          "competencias": ["Aplicar IA em problemas", "Utilizar machine learning"],
+          "ementa": "Machine learning, redes neurais, NLP"
+        }
+      ]
+    },
+    "administracao": {
+      "nome": "Administração",
+      "area": "Gestão e Negócios",
+      "eixo": "Gestão e Negócios",
+      "competencias": [
+        "Planejar e organizar atividades administrativas",
+        "Executar processos de gestão",
+        "Utilizar sistemas ERP",
+        "Elaborar documentos administrativos"
+      ],
+      "componentes": [
+        {
+          "nome": "Gestão Empresarial",
+          "ano": 1,
+          "competencias": ["Aplicar conceitos de gestão"],
+          "ementa": "Planejamento, organização, controle"
+        },
+        {
+          "nome": "Contabilidade",
+          "ano": 1,
+          "competencias": ["Elaborar demonstrações contábeis"],
+          "ementa": "Balanço patrimonial, DRE"
+        },
+        {
+          "nome": "Recursos Humanos",
+          "ano": 2,
+          "competencias": ["Executar rotinas de RH"],
+          "ementa": "Recrutamento, seleção, folha de pagamento"
+        },
+        {
+          "nome": "Marketing",
+          "ano": 2,
+          "competencias": ["Elaborar planos de marketing"],
+          "ementa": "Pesquisa de mercado, branding, digital"
+        }
+      ]
+    },
+    "enfermagem": {
+      "nome": "Enfermagem",
+      "area": "Saúde",
+      "eixo": "Ambiente e Saúde",
+      "competencias": [
+        "Assistir pacientes",
+        "Executar procedimentos de enfermagem",
+        "Aplicar protocolos de biossegurança",
+        "Trabalhar em equipe multiprofissional"
+      ],
+      "componentes": [
+        {
+          "nome": "Fundamentos de Enfermagem",
+          "ano": 1,
+          "competencias": ["Aplicar técnicas básicas de enfermagem"],
+          "ementa": "Semiotécnica,换药, sinais vitais"
+        },
+        {
+          "nome": "Enfermagem Clínica",
+          "ano": 1,
+          "competencias": ["Assistir pacientes clínicos"],
+          "ementa": "Cuidados com pacientes adultos"
+        },
+        {
+          "nome": "Enfermagem em Urgência e Emergência",
+          "ano": 2,
+          "competencias": ["Atender emergências"],
+          "ementa": "Suporte básico de vida, primeiros socorros"
+        },
+        {
+          "nome": "Saúde Coletiva",
+          "ano": 2,
+          "competencias": ["Executar ações de saúde pública"],
+          "ementa": "Vacinação, vigilância epidemiológica"
+        }
+      ]
+    },
+    "logistica": {
+      "nome": "Logística",
+      "area": "Gestão e Negócios",
+      "eixo": "Gestão e Negócios",
+      "competencias": [
+        "Planejar operações logísticas",
+        "Controlar estoque",
+        "Gerenciar transporte",
+        "Utilizar sistemas WMS"
+      ],
+      "componentes": [
+        {
+          "nome": "Gestão de Estoques",
+          "ano": 1,
+          "competencias": ["Controlar estoque"],
+          "ementa": "Curva ABC, inventário, armazenagem"
+        },
+        {
+          "nome": "Transporte e Distribuição",
+          "ano": 1,
+          "competencias": ["Planejar rotas"],
+          "ementa": "Modalidades de transporte, logística reversa"
+        },
+        {
+          "nome": "Compras e Suprimentos",
+          "ano": 2,
+          "competencias": ["Executar processos de compras"],
+          "ementa": "Negociação, fornecedores, cotação"
+        },
+        {
+          "nome": "Logística Reversa",
+          "ano": 2,
+          "competencias": ["Implementar logística reversa"],
+          "ementa": "Sustentabilidade, reciclagem"
+        }
+      ]
+    },
+    "agronegocio": {
+      "nome": "Agronegócios",
+      "area": "Recursos Naturais",
+      "eixo": "Recursos Naturais",
+      "competencias": [
+        "Planejar produção agrícola",
+        "Gerenciar propriedades rurais",
+        "Comercializar produtos agropecuários"
+      ],
+      "componentes": [
+        {
+          "nome": "Gestão Rural",
+          "ano": 1,
+          "competencias": ["Administrar propriedades rurais"],
+          "ementa": "Administração rural, custos"
+        },
+        {
+          "nome": "Tecnologia Agrícola",
+          "ano": 1,
+          "competencias": ["Aplicar tecnologias no campo"],
+          "ementa": "Precision farming, irrigação"
+        },
+        {
+          "nome": "Comercialização",
+          "ano": 2,
+          "competencias": ["Comercializar produtos"],
+          "ementa": "Mercado agrícola, gestão de riscos"
+        }
+      ]
+    },
+    "farmacia": {
+      "nome": "Farmácia",
+      "area": "Saúde",
+      "eixo": "Ambiente e Saúde",
+      "competencias": [
+        "Dispensar medicamentos",
+        "Aplicar normas de biossegurança",
+        "Auxiliar em análises clínicas",
+        "Trabalhar em equipe multidisciplinar"
+      ],
+      "componentes": [
+        {
+          "nome": "Anatomia e Fisiologia",
+          "ano": 1,
+          "competencias": ["Conhecer o corpo humano"],
+          "ementa": "Sistemas orgânicos"
+        },
+        {
+          "nome": "Farmácia Hospitalar",
+          "ano": 1,
+          "competencias": ["Dispensar medicamentos"],
+          "ementa": "Farmácia clínica, manipulação"
+        },
+        {
+          "nome": "Análises Clínicas",
+          "ano": 2,
+          "competencias": ["Executar análises laboratoriais"],
+          "ementa": "Parasitologia, bioquímica"
+        },
+        {
+          "nome": "Cosmetologia",
+          "ano": 2,
+          "competencias": ["Manipular cosméticos"],
+          "ementa": "Formulação cosmética"
+        }
+      ]
+    },
+    "ciencias_dados": {
+      "nome": "Ciência de Dados",
+      "area": "Informação e Comunicação",
+      "eixo": "Tecnologia da Informação",
+      "competencias": [
+        "Analisar dados",
+        "Aplicar estatística",
+        "Utilizar machine learning",
+        "Criar visualizações"
+      ],
+      "componentes": [
+        {
+          "nome": "Estatística Aplicada",
+          "ano": 1,
+          "competencias": ["Aplicar métodos estatísticos"],
+          "ementa": "Estatística descritiva e inferencial"
+        },
+        {
+          "nome": "Programação para Análise de Dados",
+          "ano": 1,
+          "competencias": ["Programar em Python/R"],
+          "ementa": "Python, pandas, numpy"
+        },
+        {
+          "nome": "Machine Learning",
+          "ano": 2,
+          "competencias": ["Criar modelos preditivos"],
+          "ementa": "Regressão, classificação, clustering"
+        },
+        {
+          "nome": "Visualização de Dados",
+          "ano": 2,
+          "competencias": ["Criar dashboards"],
+          "ementa": "Power BI, Tableau"
+        }
+      ]
+    },
+    "vendas": {
+      "nome": "Vendas",
+      "area": "Gestão e Negócios",
+      "eixo": "Gestão e Negócios",
+      "competencias": [
+        "Realizar vendas",
+        "Atender clientes",
+        "Utilizar técnicas de negociação",
+        "Elaborar propostas comerciais"
+      ],
+      "componentes": [
+        {
+          "nome": "Fundamentos de Vendas",
+          "ano": 1,
+          "competencias": ["Aplicar técnicas de venda"],
+          "ementa": "Funil de vendas, prospecção"
+        },
+        {
+          "nome": "Atendimento ao Cliente",
+          "ano": 1,
+          "competencias": ["Atender clientes"],
+          "ementa": "CRM, pós-venda"
+        },
+        {
+          "nome": "Negociação",
+          "ano": 2,
+          "competencias": ["Negociar com clientes"],
+          "ementa": "Técnicas de negociação, fechamento"
+        },
+        {
+          "nome": "Vendas Digitais",
+          "ano": 2,
+          "competencias": ["Vender online"],
+          "ementa": "E-commerce, marketing digital"
+        }
+      ]
+    },
+    "hospedagem": {
+      "nome": "Hospedagem",
+      "area": "Turismo",
+      "eixo": "Turismo, Hospitalidade e Lazer",
+      "competencias": [
+        "Recepcionar hóspedes",
+        "Gerenciar estadias",
+        "Organizar eventos",
+        "Aplicar normas de Qualidade"
+      ],
+      "componentes": [
+        {
+          "nome": "Recepção hoteleira",
+          "ano": 1,
+          "competencias": ["Recepcionar hóspedes"],
+          "ementa": "Check-in, check-out, PMS"
+        },
+        {
+          "nome": "Governança",
+          "ano": 1,
+          "competencias": ["Gerenciar limpeza"],
+          "ementa": "Arrumação, manutenção"
+        },
+        {
+          "nome": "Eventos",
+          "ano": 2,
+          "competencias": ["Organizar eventos"],
+          "ementa": "Planejamento, catering"
+        }
+      ]
+    },
+    "eletronica": {
+      "nome": "Eletrônica",
+      "area": "Controle e Processos Industriais",
+      "eixo": "Controle e Processos Industriais",
+      "competencias": [
+        "Montar circuitos eletrônicos",
+        "Programar microcontroladores",
+        "Realizar manutenção",
+        "Interpretar esquemas elétricos"
+      ],
+      "componentes": [
+        {
+          "nome": "Circuitos Elétricos",
+          "ano": 1,
+          "competencias": ["Analisar circuitos"],
+          "ementa": "Leis de Ohm, Kirchhoff"
+        },
+        {
+          "nome": "Eletrônica Analógica",
+          "ano": 1,
+          "competencias": ["Montar circuitos"],
+          "ementa": "Transistores, amplificadores"
+        },
+        {
+          "nome": "Microcontroladores",
+          "ano": 2,
+          "competencias": ["Programar Arduino/PIC"],
+          "ementa": "Arduino, programação C"
+        },
+        {
+          "nome": "Instrumentação",
+          "ano": 2,
+          "competencias": ["Usar instrumentos"],
+          "ementa": "Multímetro, osciloscópio"
+        }
+      ]
+    }
+  }
+}
