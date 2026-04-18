@@ -862,7 +862,14 @@ export default function GeradorPage() {
             </div>
             <div className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl border-t border-[#E8E0D4] p-4 md:p-6 flex justify-center z-50">
               <div className="max-w-3xl w-full flex flex-col md:flex-row justify-between items-center gap-4">
-                <button onClick={()=>setStep(4)} className="w-full md:w-auto px-8 py-3 rounded-xl text-xs font-black text-[#8C7B70] uppercase tracking-widest hover:text-[#C4622D] transition-all">Refazer</button>
+                <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                  <button onClick={()=>setStep(4)} className="w-full md:w-auto px-8 py-3 rounded-xl text-xs font-black text-[#8C7B70] uppercase tracking-widest hover:text-[#C4622D] transition-all">Refazer</button>
+                  <Link href="/" className="w-full md:w-auto">
+                    <button className="w-full px-8 py-3 border-2 border-[#E8E0D4] rounded-xl text-xs font-black text-[#8C7B70] uppercase tracking-widest hover:bg-[#F2EEE6] transition-all flex items-center justify-center gap-2">
+                      <ArrowLeft size={14} /> Início
+                    </button>
+                  </Link>
+                </div>
                 {isFinished ? (
                   <button onClick={()=>saveAs(zipBlob!, 'planos.zip')} className="w-full md:w-auto px-10 py-4 bg-[#5A7A5A] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#5A7A5A]/20 flex items-center justify-center gap-2"><Download size={18}/> Baixar ZIP</button>
                 ) : (
