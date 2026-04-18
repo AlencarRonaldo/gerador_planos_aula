@@ -13,7 +13,8 @@ import {
   Shield,
   X,
   Copy,
-  CheckCircle
+  CheckCircle,
+  QrCode
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -72,6 +73,7 @@ export default function PlanosPage() {
   const [planoSelecionado, setPlanoSelecionado] = useState('semestral')
   const [copiado, setCopiado] = useState(false)
   const [toastMsg, setToastMsg] = useState('')
+  const [metodoPagamento, setMetodoPagamento] = useState<'PIX' | 'CARTAO'>('PIX')
 
   const showToast = (msg: string) => {
     setToastMsg(msg)
@@ -104,8 +106,8 @@ export default function PlanosPage() {
     setLoadingPayment(true)
     try {
       const body = tipoSelecionado === 'avulso'
-        ? { tipo: 'avulso', creditos: compraCreditos }
-        : { tipo: 'assinatura', plano: planoSelecionado }
+        ? { tipo: 'avulso', creditos: compraCreditos, metodoPagamento }
+        : { tipo: 'assinatura', plano: planoSelecionado, metodoPagamento }
 
       const res = await fetch('/api/asaas/cobranca', {
         method: 'POST',
@@ -123,7 +125,9 @@ export default function PlanosPage() {
         return
       }
 
-      if (data.qrCode) {
+      if (data.invoiceUrl) {
+        window.open(data.invoiceUrl, '_blank')
+      } else if (data.qrCode) {
         setPixData(data)
         setShowPixModal(true)
       }
@@ -264,6 +268,22 @@ export default function PlanosPage() {
             ))}
           </div>
         )}
+
+        {/* Método de pagamento */}
+        <div className="flex justify-center gap-3 p-1.5 bg-stone/20 rounded-2xl w-fit mx-auto">
+          <button
+            onClick={() => setMetodoPagamento('PIX')}
+            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${metodoPagamento === 'PIX' ? 'bg-terra text-white shadow-lg shadow-terra/20' : 'text-muted hover:text-graphite'}`}
+          >
+            <QrCode size={14} /> PIX
+          </button>
+          <button
+            onClick={() => setMetodoPagamento('CARTAO')}
+            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${metodoPagamento === 'CARTAO' ? 'bg-terra text-white shadow-lg shadow-terra/20' : 'text-muted hover:text-graphite'}`}
+          >
+            <CreditCard size={14} /> Cartão de Crédito
+          </button>
+        </div>
 
         <div className="flex justify-center pt-6">
           <button

@@ -25,7 +25,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { tipo, creditos, plano } = body
+    const { tipo, creditos, plano, metodoPagamento = 'PIX' } = body
+    const billingType = metodoPagamento === 'CARTAO' ? 'CREDIT_CARD' : 'PIX'
 
     const asaasApiKey = process.env.ASAAS_API_KEY
     if (!asaasApiKey) {
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
         headers,
         body: JSON.stringify({
           customer: asaasCustomerId,
-          billingType: 'PIX',
+          billingType,
           value: valor,
           dueDate: today,
           description: `PlanoAi — ${creditos} créditos avulsos`,
@@ -148,7 +149,7 @@ export async function POST(request: NextRequest) {
         headers,
         body: JSON.stringify({
           customer: asaasCustomerId,
-          billingType: 'PIX',
+          billingType,
           cycle: cycleMap[plano],
           value: planoInfo.valor,
           nextDueDate: today,
@@ -183,7 +184,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Tipo inválido' }, { status: 400 })
     }
 
-    // ── Buscar QR Code PIX do pagamento ─────────────────────────────────────
+    // ── Cartão: retorna invoiceUrl para checkout Asaas ───────────────────────
+    if (billingType === 'CREDIT_CARD') {
+      const payRes = await fetch(`${baseUrl}/payments/${paymentId}`, { headers })
+      const payData = await payRes.json()
+      return NextResponse.json({
+        success: true,
+        paymentId,
+        invoiceUrl: payData.invoiceUrl,
+      })
+    }
+
+    // ── PIX: busca QR Code ───────────────────────────────────────────────────
     const qrRes = await fetch(`${baseUrl}/payments/${paymentId}/pixQrCode`, { headers })
     const qrData = await qrRes.json()
 
@@ -191,8 +203,8 @@ export async function POST(request: NextRequest) {
       success: true,
       paymentId,
       qrCode: {
-        encodedImage: qrData.encodedImage,   // imagem base64
-        payload: qrData.payload,             // código copia-e-cola
+        encodedImage: qrData.encodedImage,
+        payload: qrData.payload,
         expirationDate: qrData.expirationDate
       }
     })
