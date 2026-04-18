@@ -173,7 +173,6 @@ export default function GeradorPage() {
       if (comps.length > 0) setCompSel(comps[0])
       if (bims.length > 0) setBimSel(bims[0])
       setModoEscopo('salvo')
-      setStep(3)
     } else {
       showToast('Erro ao carregar escopo. Tente novamente.', false)
     }
@@ -703,6 +702,14 @@ export default function GeradorPage() {
                   className="w-full text-center text-[10px] font-black text-[#8C7B70] uppercase tracking-widest hover:text-[#C4622D] transition-colors pt-1">
                   + Usar um escopo diferente (upload)
                 </button>
+
+                {/* Botões de navegação no modo salvo */}
+                {escopoSel && (
+                  <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-2">
+                    <button onClick={() => setStep(1)} className="w-full md:w-auto px-8 py-3 border-2 border-[#E8E0D4] rounded-xl text-xs font-black text-[#8C7B70] uppercase tracking-widest hover:bg-[#F2EEE6] transition-all">Voltar</button>
+                    <button onClick={() => setStep(3)} className="w-full md:w-auto px-10 py-4 bg-[#C4622D] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#C4622D]/20">Continuar</button>
+                  </div>
+                )}
               </div>
             )}
 
