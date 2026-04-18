@@ -121,11 +121,11 @@ export default function LoginPage() {
 
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t-2 border-stone/20"></div></div>
-            <div className="relative flex justify-center text-[9px] font-black uppercase text-stone bg-white px-4 tracking-widest">Ou comece agora</div>
+            <div className="relative flex justify-center text-[9px] font-black uppercase text-graphite/60 bg-white px-4 tracking-widest">Ou comece agora</div>
           </div>
 
-          <button onClick={handleSignUp} disabled={loading} className="w-full py-4 border-2 border-terra/20 rounded-2xl text-terra font-black text-[10px] uppercase tracking-[0.2em] hover:bg-terra/5 transition-all flex items-center justify-center gap-2 disabled:opacity-50">
-            <Sparkles size={16} className="text-gold" /> Criar minha conta grátis
+          <button onClick={handleSignUp} disabled={loading} className="w-full py-4 bg-terra rounded-2xl text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-terra-dark transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-terra/20">
+            <Sparkles size={16} className="text-white" /> Criar minha conta grátis
           </button>
         </div>
 

@@ -1,4 +1,5 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function GET(request: NextRequest) {
@@ -19,7 +20,28 @@ export async function GET(request: NextRequest) {
         },
       }
     )
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code)
+    if (!error && session?.user) {
+      // Concede 3 créditos grátis se o perfil ainda não existe
+      const admin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      )
+      const { data: perfil } = await admin
+        .from('perfis')
+        .select('id')
+        .eq('id', session.user.id)
+        .maybeSingle()
+
+      if (!perfil) {
+        await admin.from('perfis').insert({
+          id: session.user.id,
+          creditos: 3,
+          assinatura_ativa: false,
+          criado_em: new Date().toISOString(),
+        })
+      }
+    }
     if (!error) return response
   }
 
