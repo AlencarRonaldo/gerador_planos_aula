@@ -44,7 +44,7 @@ export default function GeradorPage() {
   
   const [excelFile, setExcelFile] = useState<File | null>(null)
   const [wordFile, setWordFile] = useState<File | null>(null)
-  const [refFile, setRefFile] = useState<File | null>(null)
+  const [refFiles, setRefFiles] = useState<(File | null)[]>([null, null, null, null, null])
   const [templateSelecionado, setTemplateSelecionado] = useState<TemplateId | null>('classico')
 
   const [abas, setAbas] = useState<string[]>([])
@@ -346,28 +346,36 @@ export default function GeradorPage() {
 
     setIsGenerating(true)
 
-    if (refFile) {
+    const activeRefFiles = refFiles.filter(Boolean) as File[]
+    if (activeRefFiles.length > 0) {
       try {
-        if (refFile.type === 'text/plain') {
-          refText = await refFile.text()
-        } else {
-          if (refFile.size > 15 * 1024 * 1024) {
-            setIsGenerating(false)
-            alert('Arquivo de referência muito grande. Limite: 15MB.')
-            return
+        const textParts: string[] = []
+        let firstPdf: File | null = null
+        for (let i = 0; i < activeRefFiles.length; i++) {
+          const f = activeRefFiles[i]
+          if (f.type === 'text/plain') {
+            textParts.push(`[Material Aula ${i + 1}]\n` + await f.text())
+          } else if (!firstPdf) {
+            if (f.size > 15 * 1024 * 1024) {
+              setIsGenerating(false)
+              alert(`Arquivo de referência ${i + 1} muito grande. Limite: 15MB.`)
+              return
+            }
+            firstPdf = f
           }
-          const buffer = await refFile.arrayBuffer()
+        }
+        if (textParts.length > 0) refText = textParts.join('\n\n')
+        if (firstPdf) {
+          const buffer = await firstPdf.arrayBuffer()
           const bytes = new Uint8Array(buffer)
           let binary = ''
-          for (let i = 0; i < bytes.byteLength; i++) {
-            binary += String.fromCharCode(bytes[i])
-          }
+          for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i])
           refBase64 = btoa(binary)
-          refMimeType = refFile.type
+          refMimeType = firstPdf.type
         }
       } catch (e) {
         setIsGenerating(false)
-        alert("Erro ao ler o arquivo de referência.")
+        alert("Erro ao ler os arquivos de referência.")
         return
       }
     }
@@ -654,15 +662,43 @@ export default function GeradorPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {escopos.map(e => (
                     <div key={e.id} onClick={() => usarEscopoSalvo(e)}
-                      className="group p-4 border-2 border-[#E8E0D4] rounded-2xl cursor-pointer hover:border-[#C4622D] hover:bg-[#FDF9F6] bg-white transition-all flex items-center justify-between gap-3">
+                      className={`group p-4 border-2 rounded-2xl cursor-pointer transition-all flex items-center justify-between gap-3 ${escopoSel?.id === e.id ? 'border-[#C4622D] bg-[#FDF9F6]' : 'border-[#E8E0D4] bg-white hover:border-[#C4622D] hover:bg-[#FDF9F6]'}`}>
                       <div>
-                        <p className="text-xs font-black text-[#1C1917] group-hover:text-[#C4622D] transition-colors">{e.nome}</p>
+                        <p className={`text-xs font-black transition-colors ${escopoSel?.id === e.id ? 'text-[#C4622D]' : 'text-[#1C1917] group-hover:text-[#C4622D]'}`}>{e.nome}</p>
                         <p className="text-[10px] text-[#8C7B70] mt-0.5">{new Date(e.created_at).toLocaleDateString('pt-BR')}</p>
                       </div>
-                      <ArrowRight size={16} className="text-[#C4622D] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                      <ArrowRight size={16} className={`text-[#C4622D] flex-shrink-0 transition-opacity ${escopoSel?.id === e.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
                     </div>
                   ))}
                 </div>
+
+                {/* Materiais por aula — aparece após selecionar um escopo */}
+                {escopoSel && (
+                  <div className="border-t border-[#E8E0D4] pt-4 space-y-3">
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-[#5A7A5A] tracking-widest">Materiais de Aula</p>
+                      <p className="text-xs text-[#8C7B70] font-medium mt-0.5">Adicione até 5 materiais (PDF ou TXT) — um por aula da semana</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      {[0, 1, 2, 3, 4].map(i => (
+                        <FileUpload
+                          key={i}
+                          label={`Material Aula ${i + 1}`}
+                          description="PDF ou TXT · opcional"
+                          accept={{'application/pdf':['.pdf'],'text/plain':['.txt']}}
+                          file={refFiles[i]}
+                          onFileSelect={(f) => {
+                            const next = [...refFiles]
+                            next[i] = f
+                            setRefFiles(next)
+                          }}
+                          color="sage"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <button onClick={() => setModoEscopo('upload')}
                   className="w-full text-center text-[10px] font-black text-[#8C7B70] uppercase tracking-widest hover:text-[#C4622D] transition-colors pt-1">
                   + Usar um escopo diferente (upload)
@@ -689,12 +725,26 @@ export default function GeradorPage() {
                     onFileSelect={(f) => { setWordFile(f); if (f) setTemplateSelecionado(null) }}
                     color="gold"
                   />
-                  <FileUpload label="Material Digital" description="PDF ou TXT · opcional" accept={{'application/pdf':['.pdf'],'text/plain':['.txt']}} file={refFile} onFileSelect={setRefFile} color="sage" />
+                  <FileUpload label="Material Aula 1" description="PDF ou TXT · opcional" accept={{'application/pdf':['.pdf'],'text/plain':['.txt']}} file={refFiles[0]} onFileSelect={(f) => { const next = [...refFiles]; next[0] = f; setRefFiles(next) }} color="sage" />
+                </div>
+                {/* Materiais adicionais aulas 2-5 */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[1, 2, 3, 4].map(i => (
+                    <FileUpload
+                      key={i}
+                      label={`Material Aula ${i + 1}`}
+                      description="PDF ou TXT · opcional"
+                      accept={{'application/pdf':['.pdf'],'text/plain':['.txt']}}
+                      file={refFiles[i]}
+                      onFileSelect={(f) => { const next = [...refFiles]; next[i] = f; setRefFiles(next) }}
+                      color="sage"
+                    />
+                  ))}
                 </div>
                 <div className="bg-[#F2EEE6] border border-[#E8E0D4] rounded-2xl p-4 text-sm text-[#8C7B70] leading-relaxed space-y-1">
                   <p><span className="font-black text-[#1C1917]">Escopo:</span> planilha .xlsx com componentes curriculares e semanas</p>
                   <p><span className="font-black text-[#1C1917]">Template:</span> escolha um premium acima ou faça upload do .docx da escola</p>
-                  <p><span className="font-black text-[#8C7B70]">Referência:</span> ementa ou apostila em PDF/TXT — opcional</p>
+                  <p><span className="font-black text-[#8C7B70]">Materiais:</span> até 5 PDFs ou TXTs — um por aula da semana, todos opcionais</p>
                 </div>
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-8 md:mt-10">
                   <button onClick={()=>setStep(1)} className="w-full md:w-auto px-8 py-3 border-2 border-[#E8E0D4] rounded-xl text-xs font-black text-[#8C7B70] uppercase tracking-widest hover:bg-[#F2EEE6] transition-all">Voltar</button>
@@ -768,7 +818,11 @@ export default function GeradorPage() {
             <div className="w-28 h-28 bg-[#C4622D] rounded-[40px] flex items-center justify-center text-white shadow-2xl shadow-[#C4622D]/30 mb-10 rotate-6"><Sparkles size={44} strokeWidth={2.5} /></div>
             <h2 className="text-3xl md:text-4xl font-black mb-3 text-[#1C1917] tracking-tight text-center uppercase">Gerar Rascunhos</h2>
             <p className="text-[#8C7B70] text-sm md:text-base mb-12 max-w-sm font-medium leading-relaxed text-center uppercase tracking-tight">A IA escreverá o conteúdo pedagógico de cada aula agora.</p>
-            {refFile && <div className="flex items-center gap-3 bg-[#5A7A5A]/10 border border-[#5A7A5A]/20 rounded-2xl px-6 py-3 mb-10 text-[11px] font-black text-[#5A7A5A] uppercase tracking-widest">Referência Ativa: {refFile.name}</div>}
+            {refFiles.filter(Boolean).length > 0 && (
+              <div className="flex items-center gap-3 bg-[#5A7A5A]/10 border border-[#5A7A5A]/20 rounded-2xl px-6 py-3 mb-10 text-[11px] font-black text-[#5A7A5A] uppercase tracking-widest">
+                {refFiles.filter(Boolean).length} material{refFiles.filter(Boolean).length > 1 ? 'is' : ''} ativo{refFiles.filter(Boolean).length > 1 ? 's' : ''}
+              </div>
+            )}
             <button onClick={handleGenerateDrafts} disabled={isGenerating} className="w-full max-w-sm py-5 bg-[#C4622D] text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-2xl shadow-[#C4622D]/20 flex items-center justify-center gap-3">
               {isGenerating ? <Loader2 className="animate-spin" size={20} /> : (profileData?.totalPlanos === 0 ? "Iniciar Geração Grátis" : "Gerar Plano de Aula")}
             </button>
