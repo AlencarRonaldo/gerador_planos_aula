@@ -1,6 +1,7 @@
 import { PlusCircle, BookOpen, FileText, ChevronRight, BarChart3, CalendarDays, Coins } from 'lucide-react'
 import Link from 'next/link'
 import { createSupabaseServer } from '../lib/supabase-server'
+import HistoricoRecente from './HistoricoRecente'
 
 export default async function Home() {
   const supabase = await createSupabaseServer()
@@ -175,32 +176,7 @@ export default async function Home() {
             </div>
 
             {historicoRecente.length > 0 ? (
-              <div className="divide-y divide-[#E8E0D4]/50">
-                {historicoRecente.map((plano) => (
-                  <div key={plano.id} className="p-4 md:px-6 md:py-4 flex justify-between items-center hover:bg-[#FAF8F3] transition-colors">
-                    <div className="flex items-center gap-3 md:gap-4">
-                      <div className="w-10 h-10 bg-[#F2EEE6] rounded-xl flex items-center justify-center text-[#8C7B70]">
-                        <FileText size={18} />
-                      </div>
-                      <div>
-                        <p className="text-xs md:text-sm font-bold text-[#1C1917] line-clamp-1">
-                          {plano.componente} · Semana {plano.semana}
-                        </p>
-                        <p className="text-[10px] md:text-[11px] text-[#8C7B70] font-medium">
-                          {plano.turma && `${plano.turma} · `}
-                          {plano.bimestre && `${plano.bimestre}º Bim · `}
-                          {new Date(plano.criado_em).toLocaleDateString('pt-BR')}
-                        </p>
-                      </div>
-                    </div>
-                    <a href={plano.arquivo_url} target="_blank" rel="noopener noreferrer">
-                      <button className="px-4 py-2 border-2 border-[#E8E0D4] text-[#C4622D] font-black text-[10px] uppercase tracking-widest rounded-lg hover:bg-[#FAF8F3] transition-colors">
-                        ↓ Word
-                      </button>
-                    </a>
-                  </div>
-                ))}
-              </div>
+              <HistoricoRecente planos={historicoRecente} />
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-12 text-center">
                 <div className="w-12 h-12 bg-[#F2EEE6] rounded-xl flex items-center justify-center text-[#B5A89A] mb-4">
