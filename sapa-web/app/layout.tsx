@@ -2,13 +2,13 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'ProsperAula — Sua vida além da sala de aula',
+  title: 'Aula360 — Envie o escopo. Receba o plano pronto.',
   description: 'Gerador inteligente de planos de aula 100% alinhados à BNCC. Recupere seu tempo e foco no que importa.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'ProsperAula',
+    title: 'Aula360',
   },
 }
 
@@ -33,7 +33,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="SAPA" />
+        <meta name="apple-mobile-web-app-title" content="Aula360" />
       </head>
       <body>{children}</body>
     </html>

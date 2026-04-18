@@ -1,6 +1,6 @@
 {
-  "name": "SAPA - Gerador de Planos de Aula",
-  "short_name": "SAPA",
+  "name": "Aula360 - Gerador de Planos de Aula",
+  "short_name": "Aula360",
   "description": "Gerador inteligente de planos de aula para professores técnicos.",
   "start_url": "/",
   "display": "standalone",

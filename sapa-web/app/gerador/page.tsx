@@ -26,6 +26,28 @@ import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 import { supabase } from '../../lib/supabase'
 
+// ── Componentes Visuais de Apoio ──
+
+function Noise() {
+  return (
+    <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-[9999] mix-blend-overlay">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <filter id="noise">
+          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#noise)" />
+      </svg>
+    </div>
+  )
+}
+
+function NotebookPattern() {
+  return (
+    <div className="absolute inset-0 pointer-events-none opacity-[0.05]" 
+         style={{ backgroundImage: 'radial-gradient(#0F172A 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }} />
+  )
+}
+
 export default function GeradorPage() {
   // ── ESTADOS ──────────────────────────────────────────────────────────────
   const [step, setStep] = useState(1)
@@ -492,25 +514,24 @@ export default function GeradorPage() {
   const stepLabel = stepNames[step - 1] ?? ''
 
   return (
-    <div className="min-h-screen pb-12 bg-[#FAF8F3]">
-      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-[#E8E0D4]">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-3 flex justify-between items-center gap-4">
-          <Link href="/" className="flex items-center gap-2 text-[#1C1917]">
-            <div className="w-8 h-8 bg-[#C4622D] rounded-lg flex items-center justify-center text-white"><GraduationCap size={18} /></div>
-            <h1 className="text-sm md:text-base font-black leading-none uppercase tracking-tighter text-[#1C1917]">ProsperAula <span className="text-[#C4622D] text-[9px] block">Inteligência Artificial</span></h1>
+    <div className="min-h-screen pb-12 bg-[#F0F4FF]">
+      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-[#CBD5E1]">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-1 flex justify-between items-center gap-4">
+          <Link href="/" className="flex items-center gap-2 text-[#0F172A]">
+            <img src="/logo.png" alt="Aula360" className="h-12 w-auto" />
           </Link>
           <div className="flex items-center gap-4 md:gap-6">
-            <Link href="/historico" className="text-[10px] font-black uppercase text-[#8C7B70] hover:text-[#C4622D] transition-colors flex items-center gap-1.5 tracking-widest hidden xs:flex"><Layers size={14} /> Histórico</Link>
+            <Link href="/historico" className="text-[10px] font-black uppercase text-[#64748B] hover:text-[#2563EB] transition-colors flex items-center gap-1.5 tracking-widest hidden xs:flex"><Layers size={14} /> Histórico</Link>
             <div className="flex flex-col items-end gap-1 min-w-[160px]">
               <div className="flex justify-between items-center w-full">
-                <span className="text-[9px] font-black text-[#C4622D] uppercase tracking-widest">
+                <span className="text-[9px] font-black text-[#2563EB] uppercase tracking-widest">
                   Passo {step} de 5 · {stepLabel}
                 </span>
-                <span className="text-[9px] font-black text-[#8C7B70]">{progressPercent}%</span>
+                <span className="text-[9px] font-black text-[#64748B]">{progressPercent}%</span>
               </div>
-              <div className="w-full h-1.5 bg-[#E8E0D4] rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-[#CBD5E1] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#C4622D] rounded-full transition-all duration-300"
+                  className="h-full bg-[#2563EB] rounded-full transition-all duration-300"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -523,26 +544,26 @@ export default function GeradorPage() {
         {step === 1 && (
           <div className="space-y-6 animate-fade-up">
             <header className="mb-6">
-              <span className="text-[10px] font-black uppercase text-[#C4622D] tracking-widest bg-[#C4622D]/10 px-2 py-0.5 rounded">Passo 01</span>
-              <h2 className="text-2xl md:text-3xl font-black text-[#1C1917] tracking-tight">Identificação</h2>
+              <span className="text-[10px] font-black uppercase text-[#2563EB] tracking-widest bg-[#2563EB]/10 px-2 py-0.5 rounded">Passo 01</span>
+              <h2 className="text-2xl md:text-3xl font-black text-[#0F172A] tracking-tight">Identificação</h2>
             </header>
-            <div className="bg-white rounded-[32px] border border-[#E8E0D4] p-5 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 shadow-sm">
-              <div className="space-y-1.5"><label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1">Professor</label><input value={professor} onChange={e=>setProfessor(e.target.value)} className="w-full p-4 rounded-2xl border-2 border-[#E8E0D4] bg-[#F2EEE6] focus:border-[#C4622D] focus:bg-white outline-none text-sm font-bold text-[#1C1917] transition-all" placeholder="Seu nome completo" /></div>
+            <div className="bg-white rounded-[32px] border border-[#CBD5E1] p-5 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 shadow-sm">
+              <div className="space-y-1.5"><label className="text-[10px] font-black uppercase text-[#64748B] tracking-widest ml-1">Professor</label><input value={professor} onChange={e=>setProfessor(e.target.value)} className="w-full p-4 rounded-2xl border-2 border-[#CBD5E1] bg-[#E2EAFF] focus:border-[#2563EB] focus:bg-white outline-none text-sm font-bold text-[#0F172A] transition-all" placeholder="Seu nome completo" /></div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1">Escola</label>
+                <label className="text-[10px] font-black uppercase text-[#64748B] tracking-widest ml-1">Escola</label>
                 {escolasSalvas.length > 0 && !adicionandoEscola ? (
                   <div className="space-y-3">
-                    <select value={escola} onChange={e => setEscola(e.target.value)} className="w-full p-3 rounded-xl border-2 border-[#E8E0D4] bg-[#F2EEE6] text-xs font-bold text-[#1C1917] outline-none focus:border-[#C4622D] transition-all">
+                    <select value={escola} onChange={e => setEscola(e.target.value)} className="w-full p-3 rounded-xl border-2 border-[#CBD5E1] bg-[#E2EAFF] text-xs font-bold text-[#0F172A] outline-none focus:border-[#2563EB] transition-all">
                       {escolasSalvas.map(e => <option key={e} value={e}>{e}</option>)}
                     </select>
                     <div className="flex flex-wrap gap-2">
                       {escolasSalvas.map(e => (
-                        <span key={e} className={`flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1.5 rounded-lg cursor-pointer transition-all uppercase tracking-tight ${escola === e ? 'bg-[#C4622D] text-white' : 'bg-[#E8E0D4] text-[#8C7B70]'}`}>
+                        <span key={e} className={`flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1.5 rounded-lg cursor-pointer transition-all uppercase tracking-tight ${escola === e ? 'bg-[#2563EB] text-white' : 'bg-[#CBD5E1] text-[#64748B]'}`}>
                           {e}
                           <X size={10} onClick={ev => { ev.stopPropagation(); removerEscola(e) }} />
                         </span>
                       ))}
-                      <button onClick={() => setAdicionandoEscola(true)} className="text-[10px] font-black px-2.5 py-1.5 rounded-lg bg-[#C4622D]/10 text-[#C4622D] uppercase tracking-tight">+ Nova</button>
+                      <button onClick={() => setAdicionandoEscola(true)} className="text-[10px] font-black px-2.5 py-1.5 rounded-lg bg-[#2563EB]/10 text-[#2563EB] uppercase tracking-tight">+ Nova</button>
                     </div>
                   </div>
                 ) : (
@@ -550,34 +571,34 @@ export default function GeradorPage() {
                     <input
                       autoFocus value={adicionandoEscola ? novaEscola : escola}
                       onChange={e => adicionandoEscola ? setNovaEscola(e.target.value) : setEscola(e.target.value)}
-                      className="flex-1 p-4 rounded-2xl border-2 border-[#E8E0D4] bg-[#F2EEE6] focus:border-[#C4622D] focus:bg-white outline-none text-sm font-bold text-[#1C1917] transition-all"
+                      className="flex-1 p-4 rounded-2xl border-2 border-[#CBD5E1] bg-[#E2EAFF] focus:border-[#2563EB] focus:bg-white outline-none text-sm font-bold text-[#0F172A] transition-all"
                       placeholder="Nome da instituição"
                     />
                     {adicionandoEscola && (
-                      <button onClick={() => salvarEscola(novaEscola)} className="px-4 bg-[#C4622D] text-white rounded-xl"><Plus size={20}/></button>
+                      <button onClick={() => salvarEscola(novaEscola)} className="px-4 bg-[#2563EB] text-white rounded-xl"><Plus size={20}/></button>
                     )}
                   </div>
                 )}
               </div>
-              <div className="md:col-span-2 space-y-1.5"><label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1">Turma</label><input value={turma} onChange={e=>setTurma(e.target.value)} className="w-full p-4 rounded-2xl border-2 border-[#E8E0D4] bg-[#F2EEE6] focus:border-[#C4622D] focus:bg-white outline-none text-sm font-bold text-[#1C1917] transition-all" placeholder="Ex: 3º Ano Ensino Médio - TI" /></div>
+              <div className="md:col-span-2 space-y-1.5"><label className="text-[10px] font-black uppercase text-[#64748B] tracking-widest ml-1">Turma</label><input value={turma} onChange={e=>setTurma(e.target.value)} className="w-full p-4 rounded-2xl border-2 border-[#CBD5E1] bg-[#E2EAFF] focus:border-[#2563EB] focus:bg-white outline-none text-sm font-bold text-[#0F172A] transition-all" placeholder="Ex: 3º Ano Ensino Médio - TI" /></div>
             </div>
-            <div className="flex justify-end"><button onClick={()=>setStep(2)} disabled={!professor||!escola} className="w-full md:w-auto px-10 py-4 bg-[#C4622D] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#C4622D]/20">Continuar <ArrowRight size={16} className="inline ml-2" /></button></div>
+            <div className="flex justify-end"><button onClick={()=>setStep(2)} disabled={!professor||!escola} className="w-full md:w-auto px-10 py-4 bg-[#2563EB] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#2563EB]/20">Continuar <ArrowRight size={16} className="inline ml-2" /></button></div>
           </div>
         )}
 
         {step === 2 && (
           <div className="space-y-6 animate-fade-up">
             <header className="mb-6">
-              <span className="text-[10px] font-black uppercase text-[#C4622D] tracking-widest bg-[#C4622D]/10 px-2 py-0.5 rounded">Passo 02</span>
-              <h2 className="text-2xl md:text-3xl font-black text-[#1C1917] tracking-tight">Arquivos Base</h2>
+              <span className="text-[10px] font-black uppercase text-[#2563EB] tracking-widest bg-[#2563EB]/10 px-2 py-0.5 rounded">Passo 02</span>
+              <h2 className="text-2xl md:text-3xl font-black text-[#0F172A] tracking-tight">Arquivos Base</h2>
             </header>
 
             {/* Seletor de Templates Premium */}
-            <div className="bg-white rounded-[28px] border border-[#E8E0D4] p-5 md:p-6 shadow-sm space-y-4">
+            <div className="bg-white rounded-[28px] border border-[#CBD5E1] p-5 md:p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-black uppercase text-[#C4622D] tracking-widest">Templates Premium</p>
-                  <p className="text-sm font-black text-[#1C1917] mt-0.5">Escolha o layout do seu plano de aula</p>
+                  <p className="text-[10px] font-black uppercase text-[#2563EB] tracking-widest">Templates Premium</p>
+                  <p className="text-sm font-black text-[#0F172A] mt-0.5">Escolha o layout do seu plano de aula</p>
                 </div>
                 {wordFile && (
                   <span className="text-[9px] font-black bg-amber-100 text-amber-700 px-2 py-1 rounded-full uppercase tracking-wide">Usando seu .docx</span>
@@ -590,8 +611,8 @@ export default function GeradorPage() {
                     onClick={() => { setTemplateSelecionado(t.id); setWordFile(null) }}
                     className={`relative p-4 rounded-2xl border-2 cursor-pointer transition-all hover:scale-[1.01] ${
                       templateSelecionado === t.id && !wordFile
-                        ? 'border-[#C4622D] bg-[#C4622D]/[0.03] shadow-md shadow-[#C4622D]/10'
-                        : 'border-[#E8E0D4] bg-[#FAFAF8] hover:border-[#C4622D]/40'
+                        ? 'border-[#2563EB] bg-[#2563EB]/[0.03] shadow-md shadow-[#2563EB]/10'
+                        : 'border-[#CBD5E1] bg-[#FAFAF8] hover:border-[#2563EB]/40'
                     }`}
                   >
                     {/* Preview de cor */}
@@ -599,19 +620,19 @@ export default function GeradorPage() {
                       <div className="w-5 h-5 rounded-full border-2 border-white shadow" style={{ background: t.preview }} />
                       <div className="w-3 h-3 rounded-full border-2 border-white shadow" style={{ background: t.previewAlt }} />
                       {templateSelecionado === t.id && !wordFile && (
-                        <CheckCircle size={14} className="ml-auto text-[#C4622D]" strokeWidth={3} />
+                        <CheckCircle size={14} className="ml-auto text-[#2563EB]" strokeWidth={3} />
                       )}
                     </div>
                     {/* Preview visual miniaturo */}
-                    <div className="w-full h-16 rounded-lg mb-3 overflow-hidden border border-[#E8E0D4]">
+                    <div className="w-full h-16 rounded-lg mb-3 overflow-hidden border border-[#CBD5E1]">
                       {t.id === 'classico' && (
                         <div className="h-full flex flex-col">
                           <div className="h-4 w-full" style={{ background: t.preview }} />
                           <div className="flex-1 p-1 space-y-1">
                             <div className="h-1.5 w-3/4 rounded" style={{ background: t.previewAlt, opacity: 0.6 }} />
-                            <div className="h-1 w-full rounded bg-[#E8E0D4]" />
-                            <div className="h-1 w-5/6 rounded bg-[#E8E0D4]" />
-                            <div className="h-1 w-4/5 rounded bg-[#E8E0D4]" />
+                            <div className="h-1 w-full rounded bg-[#CBD5E1]" />
+                            <div className="h-1 w-5/6 rounded bg-[#CBD5E1]" />
+                            <div className="h-1 w-4/5 rounded bg-[#CBD5E1]" />
                           </div>
                         </div>
                       )}
@@ -621,7 +642,7 @@ export default function GeradorPage() {
                           <div className="flex-1 p-1 space-y-1">
                             <div className="flex items-center gap-1">
                               <div className="w-1 h-3 rounded" style={{ background: t.preview }} />
-                              <div className="h-1.5 w-2/3 rounded" style={{ background: '#E8E0D4' }} />
+                              <div className="h-1.5 w-2/3 rounded" style={{ background: '#CBD5E1' }} />
                             </div>
                             <div className="h-1 w-full rounded" style={{ background: t.previewAlt }} />
                             <div className="h-1 w-5/6 rounded" style={{ background: t.previewAlt }} />
@@ -638,45 +659,45 @@ export default function GeradorPage() {
                         </div>
                       )}
                     </div>
-                    <p className="text-[11px] font-black text-[#1C1917] uppercase tracking-tight">{t.nome}</p>
-                    <p className="text-[10px] text-[#8C7B70] mt-0.5 leading-snug font-medium">{t.descricao}</p>
+                    <p className="text-[11px] font-black text-[#0F172A] uppercase tracking-tight">{t.nome}</p>
+                    <p className="text-[10px] text-[#64748B] mt-0.5 leading-snug font-medium">{t.descricao}</p>
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-[#8C7B70] font-medium">
+              <p className="text-[10px] text-[#64748B] font-medium">
                 Ou faça upload do seu próprio modelo .docx abaixo — ele substituirá o template selecionado.
               </p>
             </div>
 
             {/* ── Escopos Salvos: aparece em destaque se existirem ── */}
             {escopos.length > 0 && (
-              <div className="bg-white border-2 border-[#C4622D]/30 rounded-[28px] p-5 md:p-6 shadow-sm space-y-4">
+              <div className="bg-white border-2 border-[#2563EB]/30 rounded-[28px] p-5 md:p-6 shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] font-black uppercase text-[#C4622D] tracking-widest">Escopos Salvos</p>
-                    <p className="text-sm font-black text-[#1C1917] mt-0.5">Use um escopo anterior — sem precisar fazer upload</p>
+                    <p className="text-[10px] font-black uppercase text-[#2563EB] tracking-widest">Escopos Salvos</p>
+                    <p className="text-sm font-black text-[#0F172A] mt-0.5">Use um escopo anterior — sem precisar fazer upload</p>
                   </div>
-                  <span className="text-[10px] font-black bg-[#C4622D]/10 text-[#C4622D] px-3 py-1 rounded-full uppercase tracking-widest">{escopos.length} salvo{escopos.length > 1 ? 's' : ''}</span>
+                  <span className="text-[10px] font-black bg-[#2563EB]/10 text-[#2563EB] px-3 py-1 rounded-full uppercase tracking-widest">{escopos.length} salvo{escopos.length > 1 ? 's' : ''}</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {escopos.map(e => (
                     <div key={e.id} onClick={() => usarEscopoSalvo(e)}
-                      className={`group p-4 border-2 rounded-2xl cursor-pointer transition-all flex items-center justify-between gap-3 ${escopoSel?.id === e.id ? 'border-[#C4622D] bg-[#FDF9F6]' : 'border-[#E8E0D4] bg-white hover:border-[#C4622D] hover:bg-[#FDF9F6]'}`}>
+                      className={`group p-4 border-2 rounded-2xl cursor-pointer transition-all flex items-center justify-between gap-3 ${escopoSel?.id === e.id ? 'border-[#2563EB] bg-[#FDF9F6]' : 'border-[#CBD5E1] bg-white hover:border-[#2563EB] hover:bg-[#FDF9F6]'}`}>
                       <div>
-                        <p className={`text-xs font-black transition-colors ${escopoSel?.id === e.id ? 'text-[#C4622D]' : 'text-[#1C1917] group-hover:text-[#C4622D]'}`}>{e.nome}</p>
-                        <p className="text-[10px] text-[#8C7B70] mt-0.5">{new Date(e.created_at).toLocaleDateString('pt-BR')}</p>
+                        <p className={`text-xs font-black transition-colors ${escopoSel?.id === e.id ? 'text-[#2563EB]' : 'text-[#0F172A] group-hover:text-[#2563EB]'}`}>{e.nome}</p>
+                        <p className="text-[10px] text-[#64748B] mt-0.5">{new Date(e.created_at).toLocaleDateString('pt-BR')}</p>
                       </div>
-                      <ArrowRight size={16} className={`text-[#C4622D] flex-shrink-0 transition-opacity ${escopoSel?.id === e.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
+                      <ArrowRight size={16} className={`text-[#2563EB] flex-shrink-0 transition-opacity ${escopoSel?.id === e.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
                     </div>
                   ))}
                 </div>
 
                 {/* Materiais por aula — aparece após selecionar um escopo */}
                 {escopoSel && (
-                  <div className="border-t border-[#E8E0D4] pt-4 space-y-3">
+                  <div className="border-t border-[#CBD5E1] pt-4 space-y-3">
                     <div>
                       <p className="text-[10px] font-black uppercase text-[#5A7A5A] tracking-widest">Materiais de Aula</p>
-                      <p className="text-xs text-[#8C7B70] font-medium mt-0.5">Adicione até 5 materiais (PDF ou TXT) — um por aula da semana</p>
+                      <p className="text-xs text-[#64748B] font-medium mt-0.5">Adicione até 5 materiais (PDF ou TXT) — um por aula da semana</p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                       {[0, 1, 2, 3, 4].map(i => (
@@ -699,15 +720,15 @@ export default function GeradorPage() {
                 )}
 
                 <button onClick={() => setModoEscopo('upload')}
-                  className="w-full text-center text-[10px] font-black text-[#8C7B70] uppercase tracking-widest hover:text-[#C4622D] transition-colors pt-1">
+                  className="w-full text-center text-[10px] font-black text-[#64748B] uppercase tracking-widest hover:text-[#2563EB] transition-colors pt-1">
                   + Usar um escopo diferente (upload)
                 </button>
 
                 {/* Botões de navegação no modo salvo */}
                 {escopoSel && (
                   <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-2">
-                    <button onClick={() => setStep(1)} className="w-full md:w-auto px-8 py-3 border-2 border-[#E8E0D4] rounded-xl text-xs font-black text-[#8C7B70] uppercase tracking-widest hover:bg-[#F2EEE6] transition-all">Voltar</button>
-                    <button onClick={() => setStep(3)} className="w-full md:w-auto px-10 py-4 bg-[#C4622D] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#C4622D]/20">Continuar</button>
+                    <button onClick={() => setStep(1)} className="w-full md:w-auto px-8 py-3 border-2 border-[#CBD5E1] rounded-xl text-xs font-black text-[#64748B] uppercase tracking-widest hover:bg-[#E2EAFF] transition-all">Voltar</button>
+                    <button onClick={() => setStep(3)} className="w-full md:w-auto px-10 py-4 bg-[#2563EB] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#2563EB]/20">Continuar</button>
                   </div>
                 )}
               </div>
@@ -718,7 +739,7 @@ export default function GeradorPage() {
               <>
                 {escopos.length > 0 && (
                   <button onClick={() => setModoEscopo('salvo')}
-                    className="text-[10px] font-black text-[#8C7B70] uppercase tracking-widest hover:text-[#C4622D] transition-colors flex items-center gap-1">
+                    className="text-[10px] font-black text-[#64748B] uppercase tracking-widest hover:text-[#2563EB] transition-colors flex items-center gap-1">
                     ← Voltar aos escopos salvos
                   </button>
                 )}
@@ -748,14 +769,14 @@ export default function GeradorPage() {
                     />
                   ))}
                 </div>
-                <div className="bg-[#F2EEE6] border border-[#E8E0D4] rounded-2xl p-4 text-sm text-[#8C7B70] leading-relaxed space-y-1">
-                  <p><span className="font-black text-[#1C1917]">Escopo:</span> planilha .xlsx com componentes curriculares e semanas</p>
-                  <p><span className="font-black text-[#1C1917]">Template:</span> escolha um premium acima ou faça upload do .docx da escola</p>
-                  <p><span className="font-black text-[#8C7B70]">Materiais:</span> até 5 PDFs ou TXTs — um por aula da semana, todos opcionais</p>
+                <div className="bg-[#E2EAFF] border border-[#CBD5E1] rounded-2xl p-4 text-sm text-[#64748B] leading-relaxed space-y-1">
+                  <p><span className="font-black text-[#0F172A]">Escopo:</span> planilha .xlsx com componentes curriculares e semanas</p>
+                  <p><span className="font-black text-[#0F172A]">Template:</span> escolha um premium acima ou faça upload do .docx da escola</p>
+                  <p><span className="font-black text-[#64748B]">Materiais:</span> até 5 PDFs ou TXTs — um por aula da semana, todos opcionais</p>
                 </div>
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-8 md:mt-10">
-                  <button onClick={()=>setStep(1)} className="w-full md:w-auto px-8 py-3 border-2 border-[#E8E0D4] rounded-xl text-xs font-black text-[#8C7B70] uppercase tracking-widest hover:bg-[#F2EEE6] transition-all">Voltar</button>
-                  <button onClick={()=>setStep(3)} disabled={!excelFile || (!wordFile && !templateSelecionado)} className="w-full md:w-auto px-10 py-4 bg-[#C4622D] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#C4622D]/20 disabled:opacity-40">Continuar</button>
+                  <button onClick={()=>setStep(1)} className="w-full md:w-auto px-8 py-3 border-2 border-[#CBD5E1] rounded-xl text-xs font-black text-[#64748B] uppercase tracking-widest hover:bg-[#E2EAFF] transition-all">Voltar</button>
+                  <button onClick={()=>setStep(3)} disabled={!excelFile || (!wordFile && !templateSelecionado)} className="w-full md:w-auto px-10 py-4 bg-[#2563EB] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#2563EB]/20 disabled:opacity-40">Continuar</button>
                 </div>
               </>
             )}
@@ -765,18 +786,18 @@ export default function GeradorPage() {
         {step === 3 && (
           <div className="space-y-6 animate-fade-up">
             <header className="mb-6">
-              <span className="text-[10px] font-black uppercase text-[#C4622D] tracking-widest bg-[#C4622D]/10 px-2 py-0.5 rounded">Passo 03</span>
-              <h2 className="text-2xl md:text-3xl font-black text-[#1C1917] tracking-tight">Configurações</h2>
+              <span className="text-[10px] font-black uppercase text-[#2563EB] tracking-widest bg-[#2563EB]/10 px-2 py-0.5 rounded">Passo 03</span>
+              <h2 className="text-2xl md:text-3xl font-black text-[#0F172A] tracking-tight">Configurações</h2>
             </header>
-            <div className="bg-white rounded-[32px] border border-[#E8E0D4] p-5 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 shadow-sm">
-              {modoEscopo === 'upload' && <div className="space-y-1.5"><label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1">Aba do Excel</label><select value={abaSel} onChange={e=>setAbaSel(e.target.value)} className="w-full p-3 rounded-xl border-2 border-[#E8E0D4] bg-[#F2EEE6] text-xs font-bold text-[#1C1917] outline-none focus:border-[#C4622D]">{abas.map(a=><option key={a}>{a}</option>)}</select></div>}
-              {modoEscopo === 'salvo' && <div className="space-y-1.5"><label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1">Escopo</label><div className="w-full p-3 rounded-xl border-2 border-[#E8E0D4] bg-[#F2EEE6] text-xs font-bold text-[#1C1917] truncate">{escopoSel?.nome || '—'}</div></div>}
-              <div className="space-y-1.5"><label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1">Bimestre</label><select value={bimSel} onChange={e=>setBimSel(Number(e.target.value))} className="w-full p-3 rounded-xl border-2 border-[#E8E0D4] bg-[#F2EEE6] text-xs font-bold text-[#1C1917] outline-none focus:border-[#C4622D]">{bimestres.map(b=><option key={b} value={b}>{b}º Bimestre</option>)}</select></div>
-              <div className="space-y-1.5"><label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1">Matéria</label><select value={compSel} onChange={e=>setCompSel(e.target.value)} className="w-full p-3 rounded-xl border-2 border-[#E8E0D4] bg-[#F2EEE6] text-xs font-bold text-[#1C1917] outline-none focus:border-[#C4622D]">{componentes.map(c=><option key={c}>{c}</option>)}</select></div>
-              <div className="md:col-span-3 pt-6 border-t border-[#E8E0D4] mt-2">
+            <div className="bg-white rounded-[32px] border border-[#CBD5E1] p-5 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 shadow-sm">
+              {modoEscopo === 'upload' && <div className="space-y-1.5"><label className="text-[10px] font-black uppercase text-[#64748B] tracking-widest ml-1">Aba do Excel</label><select value={abaSel} onChange={e=>setAbaSel(e.target.value)} className="w-full p-3 rounded-xl border-2 border-[#CBD5E1] bg-[#E2EAFF] text-xs font-bold text-[#0F172A] outline-none focus:border-[#2563EB]">{abas.map(a=><option key={a}>{a}</option>)}</select></div>}
+              {modoEscopo === 'salvo' && <div className="space-y-1.5"><label className="text-[10px] font-black uppercase text-[#64748B] tracking-widest ml-1">Escopo</label><div className="w-full p-3 rounded-xl border-2 border-[#CBD5E1] bg-[#E2EAFF] text-xs font-bold text-[#0F172A] truncate">{escopoSel?.nome || '—'}</div></div>}
+              <div className="space-y-1.5"><label className="text-[10px] font-black uppercase text-[#64748B] tracking-widest ml-1">Bimestre</label><select value={bimSel} onChange={e=>setBimSel(Number(e.target.value))} className="w-full p-3 rounded-xl border-2 border-[#CBD5E1] bg-[#E2EAFF] text-xs font-bold text-[#0F172A] outline-none focus:border-[#2563EB]">{bimestres.map(b=><option key={b} value={b}>{b}º Bimestre</option>)}</select></div>
+              <div className="space-y-1.5"><label className="text-[10px] font-black uppercase text-[#64748B] tracking-widest ml-1">Matéria</label><select value={compSel} onChange={e=>setCompSel(e.target.value)} className="w-full p-3 rounded-xl border-2 border-[#CBD5E1] bg-[#E2EAFF] text-xs font-bold text-[#0F172A] outline-none focus:border-[#2563EB]">{componentes.map(c=><option key={c}>{c}</option>)}</select></div>
+              <div className="md:col-span-3 pt-6 border-t border-[#CBD5E1] mt-2">
                 {debugInfo && (
-                  <details className="mb-4 text-[10px] bg-[#F2EEE6] rounded-xl p-3 cursor-pointer">
-                    <summary className="font-black text-[#8C7B70] uppercase tracking-widest">Diagnóstico do Excel ({debugInfo.totalLinhas} linhas lidas)</summary>
+                  <details className="mb-4 text-[10px] bg-[#E2EAFF] rounded-xl p-3 cursor-pointer">
+                    <summary className="font-black text-[#64748B] uppercase tracking-widest">Diagnóstico do Excel ({debugInfo.totalLinhas} linhas lidas)</summary>
                     <div className="mt-2 space-y-1 text-[#5A5A5A]">
                       <p><b>Col. Bimestre:</b> "{debugInfo.cols.Bimestre}" · <b>Col. Semana:</b> "{debugInfo.cols.Semana}"</p>
                       <p><b>Col. Componente:</b> "{debugInfo.cols.Componente}" · <b>Col. Tema:</b> "{debugInfo.cols.Tema}"</p>
@@ -786,27 +807,27 @@ export default function GeradorPage() {
                   </details>
                 )}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {currentWeeks.map(w=><div key={w} onClick={()=>setSelectedWeeks(prev=>prev.includes(w)?prev.filter(x=>x!==w):[...prev,w])} className={`p-4 border-2 rounded-2xl cursor-pointer text-xs font-black transition-all text-center flex flex-col items-center gap-1 ${selectedWeeks.includes(w)?'border-[#C4622D] bg-[#C4622D] text-white':'border-[#E8E0D4] bg-white text-[#8C7B70]'}`}><span className="text-[9px] opacity-60 uppercase tracking-tighter">Semana</span><span className="text-lg leading-none">{w}</span></div>)}
+                  {currentWeeks.map(w=><div key={w} onClick={()=>setSelectedWeeks(prev=>prev.includes(w)?prev.filter(x=>x!==w):[...prev,w])} className={`p-4 border-2 rounded-2xl cursor-pointer text-xs font-black transition-all text-center flex flex-col items-center gap-1 ${selectedWeeks.includes(w)?'border-[#2563EB] bg-[#2563EB] text-white':'border-[#CBD5E1] bg-white text-[#64748B]'}`}><span className="text-[9px] opacity-60 uppercase tracking-tighter">Semana</span><span className="text-lg leading-none">{w}</span></div>)}
                 </div>
               </div>
             </div>
             {/* Salvar Escopo — só mostra se veio de upload (não de escopo já salvo) */}
             {modoEscopo === 'upload' && allLessons.length > 0 && (
-              <div className="bg-[#F2EEE6] border border-[#E8E0D4] rounded-2xl p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+              <div className="bg-[#E2EAFF] border border-[#CBD5E1] rounded-2xl p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
                 <div className="flex-1 space-y-0.5">
-                  <p className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest">Salvar Escopo para uso futuro</p>
-                  <p className="text-[10px] text-[#B5A89A]">{allLessons.length} aulas carregadas · apenas você verá este escopo</p>
+                  <p className="text-[10px] font-black uppercase text-[#64748B] tracking-widest">Salvar Escopo para uso futuro</p>
+                  <p className="text-[10px] text-[#94A3B8]">{allLessons.length} aulas carregadas · apenas você verá este escopo</p>
                 </div>
                 <input
                   value={nomeEscopo}
                   onChange={e => setNomeEscopo(e.target.value)}
                   placeholder={excelFile?.name?.replace('.xlsx','') || 'Nome do escopo'}
-                  className="flex-1 p-2.5 rounded-xl border-2 border-[#E8E0D4] bg-white text-xs font-bold text-[#1C1917] outline-none focus:border-[#C4622D]"
+                  className="flex-1 p-2.5 rounded-xl border-2 border-[#CBD5E1] bg-white text-xs font-bold text-[#0F172A] outline-none focus:border-[#2563EB]"
                 />
                 <button
                   onClick={salvarEscopo}
                   disabled={salvandoEscopo}
-                  className="px-5 py-2.5 bg-[#1C1917] text-white text-[10px] font-black uppercase tracking-widest rounded-xl disabled:opacity-40 flex items-center gap-2"
+                  className="px-5 py-2.5 bg-[#0F172A] text-white text-[10px] font-black uppercase tracking-widest rounded-xl disabled:opacity-40 flex items-center gap-2"
                 >
                   {salvandoEscopo ? <Loader2 size={14} className="animate-spin" /> : null}
                   Salvar
@@ -814,23 +835,23 @@ export default function GeradorPage() {
               </div>
             )}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-8">
-              <button onClick={()=>setStep(2)} className="w-full md:w-auto px-8 py-3 border-2 border-[#E8E0D4] rounded-xl text-xs font-black text-[#8C7B70] uppercase tracking-widest hover:bg-[#F2EEE6]">Voltar</button>
-              <button onClick={()=>setStep(4)} disabled={selectedWeeks.length===0} className="w-full md:w-auto px-10 py-4 bg-[#C4622D] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#C4622D]/20">Próximo Passo</button>
+              <button onClick={()=>setStep(2)} className="w-full md:w-auto px-8 py-3 border-2 border-[#CBD5E1] rounded-xl text-xs font-black text-[#64748B] uppercase tracking-widest hover:bg-[#E2EAFF]">Voltar</button>
+              <button onClick={()=>setStep(4)} disabled={selectedWeeks.length===0} className="w-full md:w-auto px-10 py-4 bg-[#2563EB] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#2563EB]/20">Próximo Passo</button>
             </div>
           </div>
         )}
 
         {step === 4 && (
           <div className="py-12 flex flex-col items-center animate-fade-up">
-            <div className="w-28 h-28 bg-[#C4622D] rounded-[40px] flex items-center justify-center text-white shadow-2xl shadow-[#C4622D]/30 mb-10 rotate-6"><Sparkles size={44} strokeWidth={2.5} /></div>
-            <h2 className="text-3xl md:text-4xl font-black mb-3 text-[#1C1917] tracking-tight text-center uppercase">Gerar Rascunhos</h2>
-            <p className="text-[#8C7B70] text-sm md:text-base mb-12 max-w-sm font-medium leading-relaxed text-center uppercase tracking-tight">A IA escreverá o conteúdo pedagógico de cada aula agora.</p>
+            <div className="w-28 h-28 bg-[#2563EB] rounded-[40px] flex items-center justify-center text-white shadow-2xl shadow-[#2563EB]/30 mb-10 rotate-6"><Sparkles size={44} strokeWidth={2.5} /></div>
+            <h2 className="text-3xl md:text-4xl font-black mb-3 text-[#0F172A] tracking-tight text-center uppercase">Gerar Rascunhos</h2>
+            <p className="text-[#64748B] text-sm md:text-base mb-12 max-w-sm font-medium leading-relaxed text-center uppercase tracking-tight">A IA escreverá o conteúdo pedagógico de cada aula agora.</p>
             {refFiles.filter(Boolean).length > 0 && (
               <div className="flex items-center gap-3 bg-[#5A7A5A]/10 border border-[#5A7A5A]/20 rounded-2xl px-6 py-3 mb-10 text-[11px] font-black text-[#5A7A5A] uppercase tracking-widest">
                 {refFiles.filter(Boolean).length} material{refFiles.filter(Boolean).length > 1 ? 'is' : ''} ativo{refFiles.filter(Boolean).length > 1 ? 's' : ''}
               </div>
             )}
-            <button onClick={handleGenerateDrafts} disabled={isGenerating} className="w-full max-w-sm py-5 bg-[#C4622D] text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-2xl shadow-[#C4622D]/20 flex items-center justify-center gap-3">
+            <button onClick={handleGenerateDrafts} disabled={isGenerating} className="w-full max-w-sm py-5 bg-[#2563EB] text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-2xl shadow-[#2563EB]/20 flex items-center justify-center gap-3">
               {isGenerating ? <Loader2 className="animate-spin" size={20} /> : (profileData?.totalPlanos === 0 ? "Iniciar Geração Grátis" : "Gerar Plano de Aula")}
             </button>
           </div>
@@ -839,33 +860,33 @@ export default function GeradorPage() {
         {step === 5 && (
           <div className="space-y-8 animate-fade-up pb-32">
             <header className="mb-8">
-              <span className="text-[10px] font-black uppercase text-[#C4622D] tracking-widest bg-[#C4622D]/10 px-2 py-0.5 rounded">Passo 05</span>
-              <h2 className="text-2xl md:text-3xl font-black text-[#1C1917] tracking-tight">Revisão</h2>
+              <span className="text-[10px] font-black uppercase text-[#2563EB] tracking-widest bg-[#2563EB]/10 px-2 py-0.5 rounded">Passo 05</span>
+              <h2 className="text-2xl md:text-3xl font-black text-[#0F172A] tracking-tight">Revisão</h2>
             </header>
             <div className="space-y-10">
               {selectedWeeks.map(w => (
-                <div key={w} className="bg-white rounded-[32px] border border-[#E8E0D4] p-5 md:p-8 space-y-8 shadow-sm">
-                  <div className="flex items-center justify-between border-b border-[#E8E0D4] pb-4">
-                    <h3 className="text-base font-black text-[#1C1917] uppercase tracking-widest">Semana {w}</h3>
-                    <span className="text-[10px] font-black text-[#8C7B70] bg-[#F2EEE6] px-3 py-1 rounded-full uppercase">Rascunho</span>
+                <div key={w} className="bg-white rounded-[32px] border border-[#CBD5E1] p-5 md:p-8 space-y-8 shadow-sm">
+                  <div className="flex items-center justify-between border-b border-[#CBD5E1] pb-4">
+                    <h3 className="text-base font-black text-[#0F172A] uppercase tracking-widest">Semana {w}</h3>
+                    <span className="text-[10px] font-black text-[#64748B] bg-[#E2EAFF] px-3 py-1 rounded-full uppercase">Rascunho</span>
                   </div>
                   <div className="space-y-2.5">
-                    <label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1">Desenvolvimento</label>
-                    <textarea value={drafts[w]?.desenvolvimento || ''} onChange={(e) => setDrafts(prev => ({ ...prev, [w]: { ...prev[w], desenvolvimento: e.target.value } }))} className="w-full p-5 rounded-2xl border-2 border-[#E8E0D4] bg-[#F2EEE6] text-sm leading-relaxed text-[#1C1917] outline-none focus:border-[#C4622D] min-h-[300px] font-medium" />
+                    <label className="text-[10px] font-black uppercase text-[#64748B] tracking-widest ml-1">Desenvolvimento</label>
+                    <textarea value={drafts[w]?.desenvolvimento || ''} onChange={(e) => setDrafts(prev => ({ ...prev, [w]: { ...prev[w], desenvolvimento: e.target.value } }))} className="w-full p-5 rounded-2xl border-2 border-[#CBD5E1] bg-[#E2EAFF] text-sm leading-relaxed text-[#0F172A] outline-none focus:border-[#2563EB] min-h-[300px] font-medium" />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2.5"><label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1">Adaptação AEE</label><textarea value={drafts[w]?.aee || ''} onChange={(e) => setDrafts(prev => ({ ...prev, [w]: { ...prev[w], aee: e.target.value } }))} className="w-full p-5 rounded-2xl border-2 border-[#E8E0D4] bg-[#F2EEE6] text-sm leading-relaxed text-[#1C1917] outline-none focus:border-[#C4622D] min-h-[150px] font-medium" /></div>
-                    <div className="space-y-2.5"><label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1">Exercícios</label><textarea value={drafts[w]?.exercicios || ''} onChange={(e) => setDrafts(prev => ({ ...prev, [w]: { ...prev[w], exercicios: e.target.value } }))} className="w-full p-5 rounded-2xl border-2 border-[#E8E0D4] bg-[#F2EEE6] text-sm leading-relaxed text-[#1C1917] outline-none focus:border-[#C4622D] min-h-[150px] font-medium" /></div>
+                    <div className="space-y-2.5"><label className="text-[10px] font-black uppercase text-[#64748B] tracking-widest ml-1">Adaptação AEE</label><textarea value={drafts[w]?.aee || ''} onChange={(e) => setDrafts(prev => ({ ...prev, [w]: { ...prev[w], aee: e.target.value } }))} className="w-full p-5 rounded-2xl border-2 border-[#CBD5E1] bg-[#E2EAFF] text-sm leading-relaxed text-[#0F172A] outline-none focus:border-[#2563EB] min-h-[150px] font-medium" /></div>
+                    <div className="space-y-2.5"><label className="text-[10px] font-black uppercase text-[#64748B] tracking-widest ml-1">Exercícios</label><textarea value={drafts[w]?.exercicios || ''} onChange={(e) => setDrafts(prev => ({ ...prev, [w]: { ...prev[w], exercicios: e.target.value } }))} className="w-full p-5 rounded-2xl border-2 border-[#CBD5E1] bg-[#E2EAFF] text-sm leading-relaxed text-[#0F172A] outline-none focus:border-[#2563EB] min-h-[150px] font-medium" /></div>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl border-t border-[#E8E0D4] p-4 md:p-6 flex justify-center z-50">
+            <div className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl border-t border-[#CBD5E1] p-4 md:p-6 flex justify-center z-50">
               <div className="max-w-3xl w-full flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-                  <button onClick={()=>setStep(4)} className="w-full md:w-auto px-8 py-3 rounded-xl text-xs font-black text-[#8C7B70] uppercase tracking-widest hover:text-[#C4622D] transition-all">Refazer</button>
+                  <button onClick={()=>setStep(4)} className="w-full md:w-auto px-8 py-3 rounded-xl text-xs font-black text-[#64748B] uppercase tracking-widest hover:text-[#2563EB] transition-all">Refazer</button>
                   <Link href="/" className="w-full md:w-auto">
-                    <button className="w-full px-8 py-3 border-2 border-[#E8E0D4] rounded-xl text-xs font-black text-[#8C7B70] uppercase tracking-widest hover:bg-[#F2EEE6] transition-all flex items-center justify-center gap-2">
+                    <button className="w-full px-8 py-3 border-2 border-[#CBD5E1] rounded-xl text-xs font-black text-[#64748B] uppercase tracking-widest hover:bg-[#E2EAFF] transition-all flex items-center justify-center gap-2">
                       <ArrowLeft size={14} /> Início
                     </button>
                   </Link>
@@ -873,7 +894,7 @@ export default function GeradorPage() {
                 {isFinished ? (
                   <button onClick={()=>saveAs(zipBlob!, 'planos.zip')} className="w-full md:w-auto px-10 py-4 bg-[#5A7A5A] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#5A7A5A]/20 flex items-center justify-center gap-2"><Download size={18}/> Baixar ZIP</button>
                 ) : (
-                  <button onClick={handleDownloadWords} disabled={isGenerating} className="w-full md:w-auto px-10 py-4 bg-[#C4622D] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#C4622D]/20 flex items-center justify-center gap-2">{isGenerating ? <Loader2 className="animate-spin" size={18} /> : <Download size={18} />} Exportar Word</button>
+                  <button onClick={handleDownloadWords} disabled={isGenerating} className="w-full md:w-auto px-10 py-4 bg-[#2563EB] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#2563EB]/20 flex items-center justify-center gap-2">{isGenerating ? <Loader2 className="animate-spin" size={18} /> : <Download size={18} />} Exportar Word</button>
                 )}
               </div>
             </div>

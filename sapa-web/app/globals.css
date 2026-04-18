@@ -4,23 +4,23 @@
 
 /* ─── Design Tokens ──────────────────────────────────────────── */
 :root {
-  --cream: #FAF8F3;
-  --cream-dark: #F2EEE6;
-  --stone: #E8E0D4;
-  --terra: #C4622D;
-  --terra-light: #E07A4A;
-  --terra-dark: #9C4A1F;
-  --bark: #3D2B1F;
-  --graphite: #1C1917;
-  --muted: #8C7B70;
-  --muted-light: #B5A89A;
-  --sage: #5A7A5A;
-  --sage-light: #7EA87E;
-  --gold: #C89B3C;
+  --cream: #F0F4FF;
+  --cream-dark: #E2EAFF;
+  --stone: #CBD5E1;
+  --terra: #2563EB;
+  --terra-light: #3B82F6;
+  --terra-dark: #1D4ED8;
+  --bark: #0F172A;
+  --graphite: #0F172A;
+  --muted: #64748B;
+  --muted-light: #94A3B8;
+  --sage: #16A34A;
+  --sage-light: #22C55E;
+  --gold: #EC4899;
   --radius-card: 20px;
   --radius-sm: 10px;
-  --shadow-card: 0 2px 16px -2px rgba(60,35,20,0.10);
-  --shadow-hover: 0 12px 32px -6px rgba(60,35,20,0.15);
+  --shadow-card: 0 2px 16px -2px rgba(37,99,235,0.10);
+  --shadow-hover: 0 12px 32px -6px rgba(37,99,235,0.15);
 }
 
 /* ─── Base ───────────────────────────────────────────────────── */
@@ -32,8 +32,8 @@ body {
   color: var(--graphite);
   -webkit-font-smoothing: antialiased;
   background-image:
-    radial-gradient(ellipse at 0% 0%, rgba(196,98,45,0.04) 0px, transparent 60%),
-    radial-gradient(ellipse at 100% 100%, rgba(196,98,45,0.03) 0px, transparent 55%);
+    radial-gradient(ellipse at 0% 0%, rgba(37,99,235,0.05) 0px, transparent 60%),
+    radial-gradient(ellipse at 100% 100%, rgba(236,72,153,0.04) 0px, transparent 55%);
   min-height: 100vh;
 }
 
@@ -50,7 +50,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 50;
-    background: rgba(250, 248, 243, 0.85);
+    background: rgba(240, 244, 255, 0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--stone);
@@ -67,7 +67,7 @@ body {
   .sapa-card:hover {
     box-shadow: var(--shadow-hover);
     transform: translateY(-2px);
-    border-color: rgba(196, 98, 45, 0.2);
+    border-color: rgba(37, 99, 235, 0.2);
   }
 
   /* ── Hero Card (dark) ── */
@@ -80,7 +80,7 @@ body {
     transition: box-shadow 0.25s ease, transform 0.25s ease;
   }
   .sapa-card-dark:hover {
-    box-shadow: 0 20px 40px -8px rgba(60,35,20,0.35);
+    box-shadow: 0 20px 40px -8px rgba(15,23,42,0.35);
     transform: translateY(-2px);
   }
 
@@ -99,12 +99,12 @@ body {
     border-radius: 14px;
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 18px -4px rgba(196,98,45,0.5);
+    box-shadow: 0 4px 18px -4px rgba(37,99,235,0.5);
     transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
   }
   .btn-primary:hover {
     background: var(--terra-dark);
-    box-shadow: 0 6px 24px -4px rgba(196,98,45,0.6);
+    box-shadow: 0 6px 24px -4px rgba(37,99,235,0.6);
     transform: translateY(-1px);
   }
   .btn-primary:active {
@@ -121,13 +121,13 @@ body {
     color: var(--terra);
     font-weight: 600;
     font-size: 13px;
-    border: 1.5px solid rgba(196,98,45,0.3);
+    border: 1.5px solid rgba(37,99,235,0.3);
     border-radius: 10px;
     cursor: pointer;
     transition: background 0.2s, border-color 0.2s;
   }
   .btn-ghost:hover {
-    background: rgba(196,98,45,0.06);
+    background: rgba(37,99,235,0.06);
     border-color: var(--terra);
   }
 
@@ -142,7 +142,7 @@ body {
     border-radius: 999px;
   }
   .badge-terra {
-    background: rgba(196,98,45,0.12);
+    background: rgba(37,99,235,0.12);
     color: var(--terra-dark);
   }
   .badge-sage {
@@ -165,7 +165,7 @@ body {
   .progress-fill {
     height: 100%;
     border-radius: 999px;
-    background: linear-gradient(90deg, var(--terra-light), var(--gold));
+    background: linear-gradient(90deg, var(--terra), var(--gold));
     transition: width 0.6s cubic-bezier(.4,0,.2,1);
   }
 
@@ -212,7 +212,7 @@ body {
   }
   .nav-pill:hover {
     color: var(--graphite);
-    background: rgba(60,35,20,0.05);
+    background: rgba(37,99,235,0.05);
   }
 
   /* ── Input ── */
@@ -230,7 +230,7 @@ body {
   }
   .sapa-input:focus {
     border-color: var(--terra);
-    box-shadow: 0 0 0 3px rgba(196,98,45,0.12);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
   }
   .sapa-input::placeholder {
     color: var(--muted-light);
@@ -250,8 +250,29 @@ body {
 .animate-fade-up {
   animation: fadeUp 0.5s cubic-bezier(.4,0,.2,1) both;
 }
-.delay-1 { animation-delay: 0.08s; }
-.delay-2 { animation-delay: 0.16s; }
-.delay-3 { animation-delay: 0.24s; }
-.delay-4 { animation-delay: 0.32s; }
-.delay-5 { animation-delay: 0.40s; }
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+.delay-5 { animation-delay: 0.5s; }
+
+/* ─── Animações Aula360 ─── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+

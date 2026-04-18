@@ -1,10 +1,32 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Card } from '../../components/ui'
-import { GraduationCap, Mail, Lock, ArrowRight, Sparkles, Loader2 } from 'lucide-react'
+import { GraduationCap, Mail, Lock, ArrowRight, Sparkles, Loader2, Heart, BookOpen } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+
+// ── Componentes Visuais de Apoio (Sincronizados com a Home) ──
+
+function Noise() {
+  return (
+    <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-[9999] mix-blend-overlay">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <filter id="noise">
+          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#noise)" />
+      </svg>
+    </div>
+  )
+}
+
+function NotebookPattern() {
+  return (
+    <div className="absolute inset-0 pointer-events-none opacity-[0.05]" 
+         style={{ backgroundImage: 'radial-gradient(#0F172A 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }} />
+  )
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -64,26 +86,52 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-cream">
-      <div className="w-full max-w-[360px] space-y-8 animate-fade-up">
-        <div className="text-center">
-          <div className="inline-flex w-16 h-16 bg-terra rounded-[24px] items-center justify-center text-white shadow-2xl shadow-terra/30 mb-6 rotate-3">
-            <GraduationCap size={32} strokeWidth={2.5} />
-          </div>
-          <h1 className="text-3xl font-black text-graphite tracking-tight leading-none uppercase">ProsperAula <span className="text-terra text-[10px] block font-black uppercase tracking-[0.3em] mt-2">Inteligência Artificial</span></h1>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-cream selection:bg-terra/20 overflow-hidden relative">
+      <Noise />
+      <NotebookPattern />
+
+      {/* Orbes Decorativos */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-terra/5 rounded-full blur-[100px] animate-pulse" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gold/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
+
+      <div className="w-full max-w-[420px] space-y-10 animate-fade-up relative z-10">
+        
+        {/* Brand */}
+        <div className="text-center space-y-4">
+          <Link href="/" className="inline-flex flex-col items-center group">
+            <img src="/logo.png" alt="Aula360" className="h-32 w-auto mb-4 group-hover:scale-105 transition-transform duration-500" />
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-terra opacity-80">
+              Envie o escopo. Receba o plano pronto.
+            </p>
+          </Link>
         </div>
 
-        <div className="sapa-card p-8 bg-white shadow-2xl shadow-stone/20 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1.5 bg-terra" />
+        {/* Card de Login */}
+        <div className="bg-white p-10 md:p-12 rounded-[40px] border border-stone/50 shadow-2xl shadow-stone/20 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-terra/10" />
+          <div className="absolute top-0 left-0 w-0 h-1.5 bg-terra group-hover:w-full transition-all duration-700" />
           
-          <form onSubmit={handleLogin} className="space-y-5">
-            {error && <div className="p-4 bg-red-50 text-red-600 text-[11px] font-black uppercase text-center rounded-xl border border-red-100 leading-tight">{error}</div>}
-            {msg && <div className="p-4 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase text-center rounded-xl border border-emerald-100 leading-tight">{msg}</div>}
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="text-center mb-8">
+              <h2 className="text-lg font-black text-graphite tracking-tight">Bem-vindo de volta, professor.</h2>
+              <p className="text-[11px] text-muted font-medium uppercase tracking-widest mt-1">Acesse seu planejamento</p>
+            </div>
+
+            {error && (
+              <div className="p-4 bg-red-50 text-red-600 text-[10px] font-black uppercase text-center rounded-2xl border border-red-100 leading-tight animate-shake">
+                {error}
+              </div>
+            )}
+            {msg && (
+              <div className="p-4 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase text-center rounded-2xl border border-emerald-100 leading-tight">
+                {msg}
+              </div>
+            )}
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-muted uppercase tracking-[0.2em] ml-1">E-mail de Acesso</label>
-              <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-stone group-focus-within:text-terra transition-colors" size={16} />
+              <label className="text-[10px] font-black text-muted-light uppercase tracking-[0.2em] ml-1">E-mail de Acesso</label>
+              <div className="relative group/input">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-stone group-focus-within/input:text-terra transition-colors" size={16} />
                 <input 
                   type="email" 
                   autoComplete="username"
@@ -91,16 +139,19 @@ export default function LoginPage() {
                   disabled={loading} 
                   value={email} 
                   onChange={e=>setEmail(e.target.value)} 
-                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl border-2 border-stone/30 bg-cream-dark focus:border-terra focus:bg-white outline-none text-sm transition-all font-bold text-graphite disabled:opacity-50" 
-                  placeholder="seu@email.com" 
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-stone/30 bg-cream focus:border-terra focus:bg-white outline-none text-sm transition-all font-bold text-graphite disabled:opacity-50 shadow-inner" 
+                  placeholder="ex: maria@escola.com" 
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-muted uppercase tracking-[0.2em] ml-1">Senha Secreta</label>
-              <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-stone group-focus-within:text-terra transition-colors" size={16} />
+              <div className="flex justify-between items-end px-1">
+                <label className="text-[10px] font-black text-muted-light uppercase tracking-[0.2em]">Senha Secreta</label>
+                <button type="button" className="text-[9px] font-black text-terra/60 hover:text-terra uppercase tracking-widest">Esqueci</button>
+              </div>
+              <div className="relative group/input">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-stone group-focus-within/input:text-terra transition-colors" size={16} />
                 <input 
                   type="password" 
                   autoComplete="current-password"
@@ -108,30 +159,37 @@ export default function LoginPage() {
                   disabled={loading} 
                   value={password} 
                   onChange={e=>setPassword(e.target.value)} 
-                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl border-2 border-stone/30 bg-cream-dark focus:border-terra focus:bg-white outline-none text-sm transition-all font-bold text-graphite disabled:opacity-50" 
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-stone/30 bg-cream focus:border-terra focus:bg-white outline-none text-sm transition-all font-bold text-graphite disabled:opacity-50 shadow-inner" 
                   placeholder="••••••••" 
                 />
               </div>
             </div>
 
-            <button type="submit" disabled={loading} className="btn-primary w-full py-4 justify-center text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-terra/20 disabled:bg-stone">
-              {loading ? <Loader2 className="animate-spin" size={18} /> : "Entrar no Sistema"}
+            <button type="submit" disabled={loading} className="w-full py-5 bg-graphite text-white rounded-2xl flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.2em] shadow-xl hover:bg-terra active:scale-95 transition-all disabled:bg-stone/50">
+              {loading ? <Loader2 className="animate-spin" size={18} /> : (
+                <>Entrar no Sistema <ArrowRight size={16} /></>
+              )}
             </button>
           </form>
 
-          <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t-2 border-stone/20"></div></div>
-            <div className="relative flex justify-center text-[9px] font-black uppercase text-graphite/60 bg-white px-4 tracking-widest">Ou comece agora</div>
+          <div className="relative my-10">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-stone/40"></div></div>
+            <div className="relative flex justify-center text-[9px] font-black uppercase text-muted-light bg-white px-4 tracking-[0.3em]">Ou novo por aqui?</div>
           </div>
 
-          <button onClick={handleSignUp} disabled={loading} className="w-full py-4 bg-terra rounded-2xl text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-terra-dark transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-terra/20">
-            <Sparkles size={16} className="text-white" /> Criar minha conta grátis
+          <button onClick={handleSignUp} disabled={loading} className="w-full py-5 bg-terra/10 border-2 border-terra/20 rounded-2xl text-terra font-black text-[11px] uppercase tracking-[0.2em] hover:bg-terra hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg shadow-terra/5">
+            <Sparkles size={16} /> Criar minha conta grátis
           </button>
         </div>
 
-        <p className="text-center text-[10px] text-muted font-black uppercase tracking-widest opacity-40">
-          Planejamento que Inspira © 2026
-        </p>
+        <div className="flex flex-col items-center gap-4 pt-4">
+           <div className="flex items-center gap-2 px-3 py-1 bg-white/50 border border-stone/40 rounded-full text-[9px] font-black uppercase text-muted tracking-widest">
+              <Heart size={10} className="fill-terra text-terra" /> Apoio ao Professor
+           </div>
+           <p className="text-[10px] text-muted-light font-black uppercase tracking-[0.3em]">
+             © 2026 Aula360
+           </p>
+        </div>
       </div>
     </div>
   )

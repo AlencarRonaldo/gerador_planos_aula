@@ -10,33 +10,33 @@ const config: Config = {
     extend: {
       colors: {
         cream: {
-          DEFAULT: '#FAF8F3',
-          dark: '#F2EEE6',
+          DEFAULT: '#F0F4FF',
+          dark: '#E2EAFF',
         },
         stone: {
-          DEFAULT: '#E8E0D4',
+          DEFAULT: '#CBD5E1',
         },
         terra: {
-          DEFAULT: '#C4622D',
-          light: '#E07A4A',
-          dark: '#9C4A1F',
+          DEFAULT: '#2563EB',
+          light: '#3B82F6',
+          dark: '#1D4ED8',
         },
         bark: {
-          DEFAULT: '#3D2B1F',
+          DEFAULT: '#0F172A',
         },
         graphite: {
-          DEFAULT: '#1C1917',
+          DEFAULT: '#0F172A',
         },
         muted: {
-          DEFAULT: '#8C7B70',
-          light: '#B5A89A',
+          DEFAULT: '#64748B',
+          light: '#94A3B8',
         },
         sage: {
-          DEFAULT: '#5A7A5A',
-          light: '#7EA87E',
+          DEFAULT: '#16A34A',
+          light: '#22C55E',
         },
         gold: {
-          DEFAULT: '#C89B3C',
+          DEFAULT: '#EC4899',
         }
       },
       borderRadius: {
