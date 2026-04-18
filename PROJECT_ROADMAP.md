@@ -49,10 +49,10 @@ O sistema está em fase de **Protótipo Funcional de Alta Fidelidade** (MVP - Mi
 - [x] Criar lógica de **Créditos**: "O professor paga R$ X para gerar Y planos".
 - [x] Criar lógica de **Assinatura Mensal** (Básico, Pro, Premium).
 - [x] Criar Dashboard de Assinante (Ver créditos, Status do plano).
-- [ ] Configurar Webhook do Asaas no painel do Asaas (URL: https://seu-dominio/api/asaas/webhook)
+- [x] Configurar Webhook do Asaas no painel do Asaas (URL: https://sapa-web-lac.vercel.app/api/asaas/webhook)
 
 ### Fase 4: Expansão Tecnológica
-- [ ] Migrar Frontend para **Next.js** (para maior performance e SEO).
+- [x] Migrar Frontend para **Next.js** (para maior performance e SEO).
 - [ ] Criar App Mobile (ou PWA) para o professor consultar o plano direto no celular na sala de aula.
 
 ---
@@ -62,4 +62,4 @@ O objetivo é reduzir o tempo de planejamento do professor de **3 horas para 3 m
 *Valor sugerido:* R$ 29,90/mês ou R$ 2,00 por plano avulso.
 
 ---
-*Atualizado em: 13 de Abril de 2026*
+*Atualizado em: 18 de Abril de 2026*
