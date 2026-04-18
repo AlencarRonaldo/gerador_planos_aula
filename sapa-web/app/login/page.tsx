@@ -70,7 +70,7 @@ export default function LoginPage() {
           <div className="inline-flex w-16 h-16 bg-terra rounded-[24px] items-center justify-center text-white shadow-2xl shadow-terra/30 mb-6 rotate-3">
             <GraduationCap size={32} strokeWidth={2.5} />
           </div>
-          <h1 className="text-3xl font-black text-graphite tracking-tight leading-none uppercase">PlanoAi <span className="text-terra text-[10px] block font-black uppercase tracking-[0.3em] mt-2">Inteligência Artificial</span></h1>
+          <h1 className="text-3xl font-black text-graphite tracking-tight leading-none uppercase">ProsperAula <span className="text-terra text-[10px] block font-black uppercase tracking-[0.3em] mt-2">Inteligência Artificial</span></h1>
         </div>
 
         <div className="sapa-card p-8 bg-white shadow-2xl shadow-stone/20 relative overflow-hidden">

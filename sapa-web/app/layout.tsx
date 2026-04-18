@@ -2,13 +2,13 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'PlanoAi — Inteligência Artificial para Professores',
-  description: 'Crie planos de aula completos com inteligência artificial',
+  title: 'ProsperAula — Sua vida além da sala de aula',
+  description: 'Gerador inteligente de planos de aula 100% alinhados à BNCC. Recupere seu tempo e foco no que importa.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'PlanoAi',
+    title: 'ProsperAula',
   },
 }
 

@@ -187,7 +187,7 @@ function templateClassico(data: LessonData): Document {
             children: [
               new Paragraph({
                 alignment: AlignmentType.RIGHT,
-                children: [new TextRun({ text: `PlanoAi · Gerado em ${hoje()}`, size: 14, color: "999999", italics: true })],
+                children: [new TextRun({ text: `ProsperAula · Gerado em ${hoje()}`, size: 14, color: "999999", italics: true })],
               }),
             ],
           }),
@@ -197,7 +197,7 @@ function templateClassico(data: LessonData): Document {
             children: [
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                children: [new TextRun({ text: "Documento gerado pelo PlanoAi — IA para Educadores", size: 14, color: "999999", italics: true })],
+                children: [new TextRun({ text: "Documento gerado pelo ProsperAula — IA para Educadores", size: 14, color: "999999", italics: true })],
               }),
             ],
           }),
@@ -366,7 +366,7 @@ function templateContemporaneo(data: LessonData): Document {
             children: [
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                children: [new TextRun({ text: `PlanoAi — ${data.escola} · ${hoje()}`, size: 14, color: "AAAAAA", italics: true })],
+                children: [new TextRun({ text: `ProsperAula — ${data.escola} · ${hoje()}`, size: 14, color: "AAAAAA", italics: true })],
               }),
             ],
           }),
@@ -477,7 +477,7 @@ function templateMinimalista(data: LessonData): Document {
               new Paragraph({
                 border: { top: { style: BorderStyle.SINGLE, size: 4, color: BORDA } },
                 alignment: AlignmentType.RIGHT,
-                children: [new TextRun({ text: `${data.escola}  ·  PlanoAi`, size: 14, color: MUTED, italics: true })],
+                children: [new TextRun({ text: `${data.escola}  ·  ProsperAula`, size: 14, color: MUTED, italics: true })],
               }),
             ],
           }),

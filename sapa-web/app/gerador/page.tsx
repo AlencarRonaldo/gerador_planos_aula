@@ -497,7 +497,7 @@ export default function GeradorPage() {
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-3 flex justify-between items-center gap-4">
           <Link href="/" className="flex items-center gap-2 text-[#1C1917]">
             <div className="w-8 h-8 bg-[#C4622D] rounded-lg flex items-center justify-center text-white"><GraduationCap size={18} /></div>
-            <h1 className="text-sm md:text-base font-black leading-none uppercase tracking-tighter text-[#1C1917]">PlanoAi <span className="text-[#C4622D] text-[9px] block">Inteligência Artificial</span></h1>
+            <h1 className="text-sm md:text-base font-black leading-none uppercase tracking-tighter text-[#1C1917]">ProsperAula <span className="text-[#C4622D] text-[9px] block">Inteligência Artificial</span></h1>
           </Link>
           <div className="flex items-center gap-4 md:gap-6">
             <Link href="/historico" className="text-[10px] font-black uppercase text-[#8C7B70] hover:text-[#C4622D] transition-colors flex items-center gap-1.5 tracking-widest hidden xs:flex"><Layers size={14} /> Histórico</Link>

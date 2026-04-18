@@ -89,7 +89,7 @@ export default function AdminUsuariosPage() {
             <ShieldCheck size={20} />
           </div>
           <div>
-            <h1 className="text-sm font-black uppercase tracking-tighter text-slate-900">PlanoAi Admin</h1>
+            <h1 className="text-sm font-black uppercase tracking-tighter text-slate-900">ProsperAula Admin</h1>
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Gestão de Usuários</p>
           </div>
         </div>

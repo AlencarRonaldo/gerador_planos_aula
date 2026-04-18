@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
           billingType,
           value: valor,
           dueDate: today,
-          description: `PlanoAi — ${creditos} créditos avulsos`,
+          description: `ProsperAula — ${creditos} créditos avulsos`,
           externalReference: `AVULSO_${creditos}_${user.id}`,
           callback: {
             successUrl: `${request.nextUrl.origin}/planos?sucesso=true`,
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
           cycle: cycleMap[plano],
           value: planoInfo.valor,
           nextDueDate: today,
-          description: `PlanoAi — Plano ${planoInfo.nome}`,
+          description: `ProsperAula — Plano ${planoInfo.nome}`,
           externalReference: `ASSINATURA_${plano}_${user.id}`,
           callback: {
             successUrl: `${request.nextUrl.origin}/planos?sucesso=true`,
