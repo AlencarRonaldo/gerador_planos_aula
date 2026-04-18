@@ -75,8 +75,9 @@ export default function GeradorPage() {
       if (user) {
         setUserId(user.id)
         const { data: profile } = await supabase.from('perfis').select('*').eq('id', user.id).maybeSingle()
+        const { count: totalPlanos } = await supabase.from('planos_gerados').select('*', { count: 'exact', head: true }).eq('usuario_id', user.id)
         if (profile) {
-          setProfileData(profile)
+          setProfileData({ ...profile, totalPlanos: totalPlanos ?? 0 })
           setProfessor(profile.nome_completo || '')
           setCreditosAtuais(profile.creditos || 0)
           setIsFullPlan(profile.assinatura_ativa === true)
@@ -769,7 +770,7 @@ export default function GeradorPage() {
             <p className="text-[#8C7B70] text-sm md:text-base mb-12 max-w-sm font-medium leading-relaxed text-center uppercase tracking-tight">A IA escreverá o conteúdo pedagógico de cada aula agora.</p>
             {refFile && <div className="flex items-center gap-3 bg-[#5A7A5A]/10 border border-[#5A7A5A]/20 rounded-2xl px-6 py-3 mb-10 text-[11px] font-black text-[#5A7A5A] uppercase tracking-widest">Referência Ativa: {refFile.name}</div>}
             <button onClick={handleGenerateDrafts} disabled={isGenerating} className="w-full max-w-sm py-5 bg-[#C4622D] text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-2xl shadow-[#C4622D]/20 flex items-center justify-center gap-3">
-              {isGenerating ? <Loader2 className="animate-spin" size={20} /> : "Iniciar Geração Grátis"}
+              {isGenerating ? <Loader2 className="animate-spin" size={20} /> : (profileData?.totalPlanos === 0 ? "Iniciar Geração Grátis" : "Gerar Plano de Aula")}
             </button>
           </div>
         )}
