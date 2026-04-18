@@ -28,6 +28,15 @@ ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS data_expiracao   timestamptz;
 ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS planos_usados_mes   integer DEFAULT 0;
 ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS plano_inicial_usado boolean DEFAULT false;
 ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS mes_verificado    integer DEFAULT 0;
+ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS cpf               text;
+ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS telefone          text;
+ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS cep               text;
+ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS endereco          text;
+ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS numero_endereco   text;
+ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS complemento       text;
+ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS bairro            text;
+ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS cidade            text;
+ALTER TABLE public.perfis ADD COLUMN IF NOT EXISTS estado            text;
 
 -- Trigger: cria perfil automaticamente ao cadastrar novo usuário
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -187,10 +196,54 @@ CREATE POLICY "planos storage: exclusão própria"
 
 
 -- =============================================================
+-- TABELAS: Escopos (Arquivos de Escopo-Sequência)
+-- =============================================================
+
+-- Tabela principal de escopos
+CREATE TABLE IF NOT EXISTS public.escopos (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+  nome            text NOT NULL,
+  arquivo_original text,
+  dados           jsonb,
+  created_at      timestamptz DEFAULT now()
+);
+
+-- Tabela com as aulas detalhadas do escopo
+CREATE TABLE IF NOT EXISTS public.escopo_aulas (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  escopo_id       uuid REFERENCES public.escopos(id) ON DELETE CASCADE,
+  bimestre        integer,
+  semana          integer,
+  componente      text,
+  unidade         text,
+  titulo          text,
+  objetivo        text,
+  habilidades     text,
+  tema            text,
+  created_at      timestamptz DEFAULT now()
+);
+
+-- RLS para escopos
+ALTER TABLE public.escopos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.escopo_aulas ENABLE ROW LEVEL SECURITY;
+
+-- Políticas de acesso
+CREATE POLICY "escopos: usuário vê os próprios"
+  ON public.escopos FOR ALL
+  USING (user_id = auth.uid());
+
+CREATE POLICY "escopo_aulas: usuário vê os próprios"
+  ON public.escopo_aulas FOR ALL
+  USING (
+    escopo_id IN (SELECT id FROM public.escopos WHERE user_id = auth.uid())
+  );
+
+-- =============================================================
 -- VERIFICAÇÃO: rode esta query para confirmar o resultado
 -- =============================================================
 -- SELECT table_name, column_name, data_type
 -- FROM information_schema.columns
 -- WHERE table_schema = 'public'
---   AND table_name IN ('perfis', 'planos_gerados')
+--   AND table_name IN ('perfis', 'planos_gerados', 'escopos', 'escopo_aulas')
 -- ORDER BY table_name, ordinal_position;

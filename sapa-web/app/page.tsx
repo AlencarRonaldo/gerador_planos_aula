@@ -38,14 +38,14 @@ export default async function Home() {
       .from('planos_gerados')
       .select('*', { count: 'exact', head: true })
       .eq('usuario_id', user.id)
-      .gte('created_at', umaSemanaAtras.toISOString())
+      .gte('criado_em', umaSemanaAtras.toISOString())
     geradosSemana = semana || 0
 
     const { data: hist } = await supabase
       .from('planos_gerados')
       .select('*')
       .eq('usuario_id', user.id)
-      .order('created_at', { ascending: false })
+      .order('criado_em', { ascending: false })
       .limit(5)
     historicoRecente = hist || []
   }
@@ -184,7 +184,7 @@ export default async function Home() {
                         <p className="text-[10px] md:text-[11px] text-[#8C7B70] font-medium">
                           {plano.turma && `${plano.turma} · `}
                           {plano.bimestre && `${plano.bimestre}º Bim · `}
-                          {new Date(plano.created_at).toLocaleDateString('pt-BR')}
+                          {new Date(plano.criado_em).toLocaleDateString('pt-BR')}
                         </p>
                       </div>
                     </div>

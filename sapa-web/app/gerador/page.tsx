@@ -59,6 +59,14 @@ export default function GeradorPage() {
   const [isFullPlan, setIsFullPlan] = useState(false)
   const [profileData, setProfileData] = useState<any>(null)
 
+  // Escopos salvos
+  const [escopos, setEscopos] = useState<any[]>([])
+  const [escopoSel, setEscopoSel] = useState<any>(null)
+  const [modoEscopo, setModoEscopo] = useState<'upload' | 'salvo'>('upload')
+
+  // Debug de parsing
+  const [debugInfo, setDebugInfo] = useState<{ cols: Record<string, string>, totalLinhas: number, semanasRaw: number[] } | null>(null)
+
   // ── EFEITOS ────────────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -85,7 +93,90 @@ export default function GeradorPage() {
       }
     }
     loadProfile()
+    loadEscopos()
   }, [])
+
+  const loadEscopos = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!user) return
+      const res = await fetch(`/api/escopos?userId=${user.id}`, {
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}
+      })
+      if (!res.ok) throw new Error('Falha ao carregar escopos')
+      const data = await res.json()
+      if (data.escopos) setEscopos(data.escopos)
+    } catch (err) {
+      console.error('Erro ao carregar escopos:', err)
+      setEscopos([])
+    }
+  }
+
+  const [salvandoEscopo, setSalvandoEscopo] = useState(false)
+  const [nomeEscopo, setNomeEscopo] = useState('')
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null)
+
+  const showToast = (msg: string, ok = true) => {
+    setToast({ msg, ok })
+    setTimeout(() => setToast(null), 3500)
+  }
+
+  const salvarEscopo = async () => {
+    const nome = nomeEscopo.trim() || excelFile?.name?.replace('.xlsx', '') || 'Escopo'
+    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!user || allLessons.length === 0) return
+    setSalvandoEscopo(true)
+    try {
+      const res = await fetch('/api/escopos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {})
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          nome,
+          arquivoOriginal: excelFile?.name || 'Escopo Sequência',
+          aulas: allLessons
+        })
+      })
+      const result = await res.json()
+      if (result.escopo) {
+        await loadEscopos()
+        setNomeEscopo('')
+        showToast(`Escopo salvo com ${result.totalAulas} aulas!`)
+      } else {
+        showToast('Erro ao salvar: ' + (result.error || 'desconhecido'), false)
+      }
+    } finally {
+      setSalvandoEscopo(false)
+    }
+  }
+
+  const usarEscopoSalvo = async (escopo: any) => {
+    setEscopoSel(escopo)
+    setSelectedWeeks([])
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch(`/api/escopos/aulas?escopoId=${escopo.id}`, {
+      headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}
+    })
+    const data = await res.json()
+    if (data.aulas && data.aulas.length > 0) {
+      setAllLessons(data.aulas)
+      const comps = Array.from(new Set<string>(data.aulas.map((a: any) => a.componente).filter(Boolean))).sort()
+      const bims = Array.from(new Set<number>(data.aulas.map((a: any) => a.bimestre).filter(Boolean))).sort((a, b) => a - b)
+      setComponentes(comps)
+      setBimestres(bims)
+      if (comps.length > 0) setCompSel(comps[0])
+      if (bims.length > 0) setBimSel(bims[0])
+      setModoEscopo('salvo')
+      setStep(3)
+    } else {
+      showToast('Erro ao carregar escopo. Tente novamente.', false)
+    }
+  }
 
   const salvarEscola = async (nome: string) => {
     if (!nome.trim()) return
@@ -109,6 +200,16 @@ export default function GeradorPage() {
   }
 
   useEffect(() => {
+    setSelectedWeeks([])
+  }, [bimSel, compSel, abaSel])
+
+  // Ao entrar no passo 2, se houver escopos salvos mostra-os por padrão
+  useEffect(() => {
+    if (step === 2 && escopos.length > 0) setModoEscopo('salvo')
+    if (step === 2 && escopos.length === 0) setModoEscopo('upload')
+  }, [step, escopos.length])
+
+  useEffect(() => {
     if (excelFile) {
       const reader = new FileReader()
       reader.onload = (e) => {
@@ -125,15 +226,79 @@ export default function GeradorPage() {
       const reader = new FileReader()
       reader.onload = (e) => {
         const wb = XLSX.read(new Uint8Array(e.target?.result as ArrayBuffer), { type: 'array' })
-        const json = XLSX.utils.sheet_to_json(wb.Sheets[abaSel], { header: 1 }) as any[][]
+        const json = XLSX.utils.sheet_to_json(wb.Sheets[abaSel]) as any[]
         const comps = new Set<string>(); const bims = new Set<number>(); const lessons: any[] = []
 
-        json.slice(1).forEach(row => {
-          if (!row[1] || !row[10]) return
-          const b = Number(row[1]); const w = Number(row[10])
-          if (!isNaN(b)) bims.add(b)
-          const m = String(row[5] || "").length > 100 ? String(row[3] || "") : (String(row[5] || "") || String(row[3] || ""))
-          if (m) { comps.add(m); lessons.push({ bimestre: b, semana: w, componente: m, titulo: row[12], obj: row[15], hab: row[13], tema: row[11] }) }
+        if (json.length === 0) return
+
+        // Helper para extrair número de textos como "1º", "2ª semana", etc.
+        const extrairNumero = (val: any) => {
+          if (typeof val === 'number') return val
+          if (!val) return NaN
+          const match = String(val).match(/\d+/)
+          return match ? parseInt(match[0]) : NaN
+        }
+
+        // Detecta a linha de cabeçalho real (pode não ser a linha 0 se houver títulos antes)
+        const findHeaderRow = () => {
+          for (let i = 0; i < Math.min(json.length, 10); i++) {
+            const keys = Object.keys(json[i] || {})
+            const hasSemanaBim = keys.some(k => k.toLowerCase().includes('semana') || k.toLowerCase().includes('bimestre'))
+            if (hasSemanaBim) return json[i]
+          }
+          return json[0] || {}
+        }
+        const headers = findHeaderRow()
+        const headerKeys = Object.keys(headers)
+        const findCol = (patterns: string[]) => headerKeys.find(k => patterns.some(p => k.toLowerCase().includes(p))) || null
+
+        const colBimestre = findCol(['bimestre', 'bim']) || 'Bimestre'
+        const colComponente = findCol(['componente', 'unidade curricular', 'disciplina', 'matéria', 'materia']) || 'Nome do componente'
+        // Usa word-boundary para não capturar "semanais" (qtd. de aulas/semana)
+        const colSemana = headerKeys.find(k => /\bsemana\b/i.test(k)) || 'Semana'
+        const colTema = findCol(['tema', 'conteúdo', 'conteudo', 'unidade']) || 'Tema da semana'
+        const colTitulo = findCol(['título', 'titulo', 'nome da aula']) || 'Título da aula'
+        const colObj = findCol(['objetivo']) || 'Objetivos da aula'
+        const colHab = findCol(['habilidade']) || 'Habilidades técnicas'
+
+        // Inicia lastBim como 1 (padrão) para evitar perda de linhas sem bimestre explícito
+        let lastBim: number = 1
+        let lastComp: string | null = null
+        let lastSemana: number | null = null  // fill-forward para semana
+
+        json.forEach((row: any) => {
+          const bRaw = extrairNumero(row[colBimestre])
+          const wRaw = extrairNumero(row[colSemana])
+
+          // Fill-forward: bimestre e semana herdam o valor da linha anterior se vazio
+          const b = !isNaN(bRaw) ? bRaw : lastBim
+          lastBim = b
+
+          const w = !isNaN(wRaw) ? wRaw : lastSemana
+          if (w !== null) lastSemana = w
+
+          let m = (row[colComponente] || row['Unidade curricular'] || row['Componente Curricular'] || '').toString().trim()
+          if (m.length > 100) m = '' // Evita textos gigantes acidentais
+
+          // Fill-forward: componente herda o valor da linha anterior se vazio
+          const currentComp = m || lastComp
+          if (currentComp) lastComp = currentComp
+
+          // Linha inválida: sem semana ou sem componente
+          if (w === null || !currentComp) return
+
+          bims.add(b)
+          comps.add(currentComp)
+
+          lessons.push({
+            bimestre: b,
+            semana: w!,
+            componente: currentComp,
+            titulo: row[colTitulo] || '',
+            obj: row[colObj] || '',
+            hab: row[colHab] || '',
+            tema: row[colTema] || ''
+          })
         })
         const sortedComps = Array.from(comps).sort()
         const sortedBims = Array.from(bims).sort((a,b)=>a-b)
@@ -142,6 +307,20 @@ export default function GeradorPage() {
         setBimestres(sortedBims)
         if (sortedComps.length > 0) setCompSel(sortedComps[0])
         if (sortedBims.length > 0) setBimSel(sortedBims[0])
+
+        // Debug: salva info de parsing para diagnóstico
+        const semanasRaw = json.map((r: any) => {
+          const v = r[colSemana]
+          if (typeof v === 'number') return v
+          if (!v) return null
+          const m = String(v).match(/\d+/)
+          return m ? parseInt(m[0]) : null
+        }).filter((v): v is number => v !== null)
+        setDebugInfo({
+          cols: { Bimestre: colBimestre, Componente: colComponente, Semana: colSemana, Tema: colTema },
+          totalLinhas: json.length,
+          semanasRaw: Array.from(new Set(semanasRaw)).sort((a,b)=>a-b)
+        })
       }
       reader.readAsArrayBuffer(excelFile)
     }
@@ -299,7 +478,7 @@ export default function GeradorPage() {
     }
   }
 
-  const currentWeeks = Array.from(new Set(allLessons.filter(l => l.bimestre === bimSel && l.componente === compSel).map(l => l.semana))).sort((a,b)=>a-b)
+  const currentWeeks = Array.from(new Set(allLessons.filter(l => l.bimestre === bimSel).map(l => l.semana))).sort((a,b)=>a-b)
   const stepNames = ['Identificação', 'Arquivos Base', 'Configurações', 'Gerar Rascunhos', 'Revisão']
   const progressPercent = Math.round((step / 5) * 100)
   const stepLabel = stepNames[step - 1] ?? ''
@@ -461,29 +640,67 @@ export default function GeradorPage() {
               </p>
             </div>
 
-            {/* Upload de arquivos */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
-              <FileUpload label={"Escopo\nSequência"} description=".xlsx" accept={{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx']}} file={excelFile} onFileSelect={setExcelFile} color="terra" />
-              <FileUpload
-                label="Seu Modelo .docx"
-                description="opcional · substitui template"
-                accept={{'application/vnd.openxmlformats-officedocument.wordprocessingml.document':['.docx']}}
-                file={wordFile}
-                onFileSelect={(f) => { setWordFile(f); if (f) setTemplateSelecionado(null) }}
-                color="gold"
-              />
-              <FileUpload label="Material Digital" description="PDF ou TXT · opcional" accept={{'application/pdf':['.pdf'],'text/plain':['.txt']}} file={refFile} onFileSelect={setRefFile} color="sage" />
-            </div>
+            {/* ── Escopos Salvos: aparece em destaque se existirem ── */}
+            {escopos.length > 0 && (
+              <div className="bg-white border-2 border-[#C4622D]/30 rounded-[28px] p-5 md:p-6 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-[#C4622D] tracking-widest">Escopos Salvos</p>
+                    <p className="text-sm font-black text-[#1C1917] mt-0.5">Use um escopo anterior — sem precisar fazer upload</p>
+                  </div>
+                  <span className="text-[10px] font-black bg-[#C4622D]/10 text-[#C4622D] px-3 py-1 rounded-full uppercase tracking-widest">{escopos.length} salvo{escopos.length > 1 ? 's' : ''}</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {escopos.map(e => (
+                    <div key={e.id} onClick={() => usarEscopoSalvo(e)}
+                      className="group p-4 border-2 border-[#E8E0D4] rounded-2xl cursor-pointer hover:border-[#C4622D] hover:bg-[#FDF9F6] bg-white transition-all flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-black text-[#1C1917] group-hover:text-[#C4622D] transition-colors">{e.nome}</p>
+                        <p className="text-[10px] text-[#8C7B70] mt-0.5">{new Date(e.created_at).toLocaleDateString('pt-BR')}</p>
+                      </div>
+                      <ArrowRight size={16} className="text-[#C4622D] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => setModoEscopo('upload')}
+                  className="w-full text-center text-[10px] font-black text-[#8C7B70] uppercase tracking-widest hover:text-[#C4622D] transition-colors pt-1">
+                  + Usar um escopo diferente (upload)
+                </button>
+              </div>
+            )}
 
-            <div className="bg-[#F2EEE6] border border-[#E8E0D4] rounded-2xl p-4 text-sm text-[#8C7B70] leading-relaxed space-y-1">
-              <p><span className="font-black text-[#1C1917]">Escopo:</span> planilha .xlsx com componentes curriculares e semanas</p>
-              <p><span className="font-black text-[#1C1917]">Template:</span> escolha um premium acima ou faça upload do .docx da escola</p>
-              <p><span className="font-black text-[#8C7B70]">Referência:</span> ementa ou apostila em PDF/TXT — opcional</p>
-            </div>
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-8 md:mt-10">
-              <button onClick={()=>setStep(1)} className="w-full md:w-auto px-8 py-3 border-2 border-[#E8E0D4] rounded-xl text-xs font-black text-[#8C7B70] uppercase tracking-widest hover:bg-[#F2EEE6] transition-all">Voltar</button>
-              <button onClick={()=>setStep(3)} disabled={!excelFile || (!wordFile && !templateSelecionado)} className="w-full md:w-auto px-10 py-4 bg-[#C4622D] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#C4622D]/20 disabled:opacity-40">Continuar</button>
-            </div>
+            {/* ── Upload: aparece sempre se não tem escopos, ou se o usuário clicou em "upload" ── */}
+            {(escopos.length === 0 || modoEscopo === 'upload') && (
+              <>
+                {escopos.length > 0 && (
+                  <button onClick={() => setModoEscopo('salvo')}
+                    className="text-[10px] font-black text-[#8C7B70] uppercase tracking-widest hover:text-[#C4622D] transition-colors flex items-center gap-1">
+                    ← Voltar aos escopos salvos
+                  </button>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+                  <FileUpload label={"Escopo\nSequência"} description=".xlsx" accept={{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx']}} file={excelFile} onFileSelect={setExcelFile} color="terra" />
+                  <FileUpload
+                    label="Seu Modelo .docx"
+                    description="opcional · substitui template"
+                    accept={{'application/vnd.openxmlformats-officedocument.wordprocessingml.document':['.docx']}}
+                    file={wordFile}
+                    onFileSelect={(f) => { setWordFile(f); if (f) setTemplateSelecionado(null) }}
+                    color="gold"
+                  />
+                  <FileUpload label="Material Digital" description="PDF ou TXT · opcional" accept={{'application/pdf':['.pdf'],'text/plain':['.txt']}} file={refFile} onFileSelect={setRefFile} color="sage" />
+                </div>
+                <div className="bg-[#F2EEE6] border border-[#E8E0D4] rounded-2xl p-4 text-sm text-[#8C7B70] leading-relaxed space-y-1">
+                  <p><span className="font-black text-[#1C1917]">Escopo:</span> planilha .xlsx com componentes curriculares e semanas</p>
+                  <p><span className="font-black text-[#1C1917]">Template:</span> escolha um premium acima ou faça upload do .docx da escola</p>
+                  <p><span className="font-black text-[#8C7B70]">Referência:</span> ementa ou apostila em PDF/TXT — opcional</p>
+                </div>
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-8 md:mt-10">
+                  <button onClick={()=>setStep(1)} className="w-full md:w-auto px-8 py-3 border-2 border-[#E8E0D4] rounded-xl text-xs font-black text-[#8C7B70] uppercase tracking-widest hover:bg-[#F2EEE6] transition-all">Voltar</button>
+                  <button onClick={()=>setStep(3)} disabled={!excelFile || (!wordFile && !templateSelecionado)} className="w-full md:w-auto px-10 py-4 bg-[#C4622D] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#C4622D]/20 disabled:opacity-40">Continuar</button>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -494,15 +711,50 @@ export default function GeradorPage() {
               <h2 className="text-2xl md:text-3xl font-black text-[#1C1917] tracking-tight">Configurações</h2>
             </header>
             <div className="bg-white rounded-[32px] border border-[#E8E0D4] p-5 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 shadow-sm">
-              <div className="space-y-1.5"><label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1">Aba do Excel</label><select value={abaSel} onChange={e=>setAbaSel(e.target.value)} className="w-full p-3 rounded-xl border-2 border-[#E8E0D4] bg-[#F2EEE6] text-xs font-bold text-[#1C1917] outline-none focus:border-[#C4622D]">{abas.map(a=><option key={a}>{a}</option>)}</select></div>
+              {modoEscopo === 'upload' && <div className="space-y-1.5"><label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1">Aba do Excel</label><select value={abaSel} onChange={e=>setAbaSel(e.target.value)} className="w-full p-3 rounded-xl border-2 border-[#E8E0D4] bg-[#F2EEE6] text-xs font-bold text-[#1C1917] outline-none focus:border-[#C4622D]">{abas.map(a=><option key={a}>{a}</option>)}</select></div>}
+              {modoEscopo === 'salvo' && <div className="space-y-1.5"><label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1">Escopo</label><div className="w-full p-3 rounded-xl border-2 border-[#E8E0D4] bg-[#F2EEE6] text-xs font-bold text-[#1C1917] truncate">{escopoSel?.nome || '—'}</div></div>}
               <div className="space-y-1.5"><label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1">Bimestre</label><select value={bimSel} onChange={e=>setBimSel(Number(e.target.value))} className="w-full p-3 rounded-xl border-2 border-[#E8E0D4] bg-[#F2EEE6] text-xs font-bold text-[#1C1917] outline-none focus:border-[#C4622D]">{bimestres.map(b=><option key={b} value={b}>{b}º Bimestre</option>)}</select></div>
               <div className="space-y-1.5"><label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1">Matéria</label><select value={compSel} onChange={e=>setCompSel(e.target.value)} className="w-full p-3 rounded-xl border-2 border-[#E8E0D4] bg-[#F2EEE6] text-xs font-bold text-[#1C1917] outline-none focus:border-[#C4622D]">{componentes.map(c=><option key={c}>{c}</option>)}</select></div>
               <div className="md:col-span-3 pt-6 border-t border-[#E8E0D4] mt-2">
+                {debugInfo && (
+                  <details className="mb-4 text-[10px] bg-[#F2EEE6] rounded-xl p-3 cursor-pointer">
+                    <summary className="font-black text-[#8C7B70] uppercase tracking-widest">Diagnóstico do Excel ({debugInfo.totalLinhas} linhas lidas)</summary>
+                    <div className="mt-2 space-y-1 text-[#5A5A5A]">
+                      <p><b>Col. Bimestre:</b> "{debugInfo.cols.Bimestre}" · <b>Col. Semana:</b> "{debugInfo.cols.Semana}"</p>
+                      <p><b>Col. Componente:</b> "{debugInfo.cols.Componente}" · <b>Col. Tema:</b> "{debugInfo.cols.Tema}"</p>
+                      <p><b>Semanas encontradas na coluna:</b> {debugInfo.semanasRaw.length > 0 ? debugInfo.semanasRaw.join(', ') : '— nenhuma'}</p>
+                      <p><b>Aulas parseadas (total):</b> {allLessons.length} · <b>Neste bimestre:</b> {allLessons.filter(l=>l.bimestre===bimSel).length}</p>
+                    </div>
+                  </details>
+                )}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {currentWeeks.map(w=><div key={w} onClick={()=>setSelectedWeeks(prev=>prev.includes(w)?prev.filter(x=>x!==w):[...prev,w])} className={`p-4 border-2 rounded-2xl cursor-pointer text-xs font-black transition-all text-center flex flex-col items-center gap-1 ${selectedWeeks.includes(w)?'border-[#C4622D] bg-[#C4622D] text-white':'border-[#E8E0D4] bg-white text-[#8C7B70]'}`}><span className="text-[9px] opacity-60 uppercase tracking-tighter">Semana</span><span className="text-lg leading-none">{w}</span></div>)}
                 </div>
               </div>
             </div>
+            {/* Salvar Escopo — só mostra se veio de upload (não de escopo já salvo) */}
+            {modoEscopo === 'upload' && allLessons.length > 0 && (
+              <div className="bg-[#F2EEE6] border border-[#E8E0D4] rounded-2xl p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+                <div className="flex-1 space-y-0.5">
+                  <p className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest">Salvar Escopo para uso futuro</p>
+                  <p className="text-[10px] text-[#B5A89A]">{allLessons.length} aulas carregadas · apenas você verá este escopo</p>
+                </div>
+                <input
+                  value={nomeEscopo}
+                  onChange={e => setNomeEscopo(e.target.value)}
+                  placeholder={excelFile?.name?.replace('.xlsx','') || 'Nome do escopo'}
+                  className="flex-1 p-2.5 rounded-xl border-2 border-[#E8E0D4] bg-white text-xs font-bold text-[#1C1917] outline-none focus:border-[#C4622D]"
+                />
+                <button
+                  onClick={salvarEscopo}
+                  disabled={salvandoEscopo}
+                  className="px-5 py-2.5 bg-[#1C1917] text-white text-[10px] font-black uppercase tracking-widest rounded-xl disabled:opacity-40 flex items-center gap-2"
+                >
+                  {salvandoEscopo ? <Loader2 size={14} className="animate-spin" /> : null}
+                  Salvar
+                </button>
+              </div>
+            )}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-8">
               <button onClick={()=>setStep(2)} className="w-full md:w-auto px-8 py-3 border-2 border-[#E8E0D4] rounded-xl text-xs font-black text-[#8C7B70] uppercase tracking-widest hover:bg-[#F2EEE6]">Voltar</button>
               <button onClick={()=>setStep(4)} disabled={selectedWeeks.length===0} className="w-full md:w-auto px-10 py-4 bg-[#C4622D] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-[#C4622D]/20">Próximo Passo</button>
@@ -559,6 +811,13 @@ export default function GeradorPage() {
           </div>
         )}
       </main>
+
+      {toast && (
+        <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] px-5 py-3 rounded-2xl shadow-2xl text-white text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all animate-fade-up ${toast.ok ? 'bg-[#5A7A5A]' : 'bg-red-600'}`}>
+          {toast.ok ? <CheckCircle size={16} /> : <X size={16} />}
+          {toast.msg}
+        </div>
+      )}
     </div>
   )
 }

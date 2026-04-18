@@ -1,10 +1,18 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { GraduationCap, User, School, BookOpen, Save, LogOut, ArrowLeft, Loader2, CheckCircle, CreditCard, Sparkles, Coins } from 'lucide-react'
+import { User, School, BookOpen, Save, LogOut, ArrowLeft, Loader2, CheckCircle, Coins, CreditCard, Phone, MapPin, Home } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
+
+const ESTADOS = [
+  'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG',
+  'PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'
+]
+
+const inp = "w-full p-4 rounded-2xl border-2 border-[#E8E0D4] bg-[#F2EEE6] focus:border-[#C4622D] focus:bg-white outline-none text-sm font-bold text-[#1C1917] transition-all"
+const lbl = "text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1 flex items-center gap-2"
 
 export default function PerfilPage() {
   const router = useRouter()
@@ -13,11 +21,25 @@ export default function PerfilPage() {
   const [saved, setSaved] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [email, setEmail] = useState('')
+
+  // Dados pedagógicos
   const [nome, setNome] = useState('')
   const [escola, setEscola] = useState('')
   const [materiaPadrao, setMateriaPadrao] = useState('')
+
+  // Dados de pagamento
+  const [cpf, setCpf] = useState('')
+  const [telefone, setTelefone] = useState('')
+  const [cep, setCep] = useState('')
+  const [endereco, setEndereco] = useState('')
+  const [numeroEndereco, setNumeroEndereco] = useState('')
+  const [complemento, setComplemento] = useState('')
+  const [bairro, setBairro] = useState('')
+  const [cidade, setCidade] = useState('')
+  const [estado, setEstado] = useState('')
+
   const [creditos, setCreditos] = useState(0)
-  const [assinaturaAtiva, setAssinaturaAtiva] = useState(false)
+  const [loadingCep, setLoadingCep] = useState(false)
 
   useEffect(() => {
     async function loadProfile() {
@@ -30,13 +52,54 @@ export default function PerfilPage() {
         setNome(data.nome_completo || '')
         setEscola(data.escola_padrao || '')
         setMateriaPadrao(data.materia_padrao || '')
+        setCpf(fmtCpf(data.cpf || ''))
+        setTelefone(fmtTelefone(data.telefone || ''))
+        setCep(fmtCep(data.cep || ''))
+        setEndereco(data.endereco || '')
+        setNumeroEndereco(data.numero_endereco || '')
+        setComplemento(data.complemento || '')
+        setBairro(data.bairro || '')
+        setCidade(data.cidade || '')
+        setEstado(data.estado || '')
         setCreditos(data.creditos || 0)
-        setAssinaturaAtiva(data.assinatura_ativa || false)
       }
       setLoading(false)
     }
     loadProfile()
   }, [router])
+
+  // ── Máscaras ──────────────────────────────────────────────────────────────
+  const fmtCpf = (v: string) => {
+    const d = v.replace(/\D/g, '').slice(0, 11)
+    return d.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+  }
+  const fmtTelefone = (v: string) => {
+    const d = v.replace(/\D/g, '').slice(0, 11)
+    if (d.length <= 10) return d.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3')
+    return d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3')
+  }
+  const fmtCep = (v: string) => {
+    const d = v.replace(/\D/g, '').slice(0, 8)
+    return d.replace(/(\d{5})(\d{1,3})/, '$1-$2')
+  }
+
+  // ── Busca CEP ─────────────────────────────────────────────────────────────
+  const buscarCep = async (valor: string) => {
+    const digits = valor.replace(/\D/g, '')
+    if (digits.length !== 8) return
+    setLoadingCep(true)
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`)
+      const data = await res.json()
+      if (!data.erro) {
+        setEndereco(data.logradouro || '')
+        setBairro(data.bairro || '')
+        setCidade(data.localidade || '')
+        setEstado(data.uf || '')
+      }
+    } catch {}
+    setLoadingCep(false)
+  }
 
   const handleSave = async () => {
     if (!userId) return
@@ -46,6 +109,15 @@ export default function PerfilPage() {
       nome_completo: nome,
       escola_padrao: escola,
       materia_padrao: materiaPadrao,
+      cpf: cpf.replace(/\D/g, '') || null,
+      telefone: telefone.replace(/\D/g, '') || null,
+      cep: cep.replace(/\D/g, '') || null,
+      endereco: endereco || null,
+      numero_endereco: numeroEndereco || null,
+      complemento: complemento || null,
+      bairro: bairro || null,
+      cidade: cidade || null,
+      estado: estado || null,
       atualizado_em: new Date().toISOString(),
     })
     setSaving(false)
@@ -89,7 +161,7 @@ export default function PerfilPage() {
           </div>
         </div>
 
-        {/* Card de Créditos */}
+        {/* Card Créditos */}
         <div className="rounded-[24px] p-6 bg-[#3D2B1F] relative overflow-hidden shadow-xl shadow-[#3D2B1F]/20">
           <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-[#C4622D]/20 rounded-full blur-3xl" />
           <div className="flex items-center justify-between relative z-10">
@@ -103,63 +175,112 @@ export default function PerfilPage() {
               </div>
             </div>
             <Link href="/planos">
-              <button 
-                className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-lg border border-[#C4622D]/20"
-                style={{ backgroundColor: '#C4622D', color: '#ffffff' }}
-              >
+              <button className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-lg border border-[#C4622D]/20 bg-[#C4622D] text-white">
                 Recarregar
               </button>
             </Link>
           </div>
         </div>
 
-        {/* Formulário */}
+        {/* ── Dados Pedagógicos ── */}
         <div className="bg-white rounded-[32px] border border-[#E8E0D4] p-6 md:p-8 space-y-6 shadow-sm">
+          <p className="text-[10px] font-black uppercase text-[#C4622D] tracking-widest">Dados da Escola</p>
+
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1 flex items-center gap-2">
-              <User size={12} className="text-[#C4622D]" /> Nome Completo
-            </label>
-            <input
-              value={nome}
-              onChange={e => setNome(e.target.value)}
-              className="w-full p-4 rounded-2xl border-2 border-[#E8E0D4] bg-[#F2EEE6] focus:border-[#C4622D] focus:bg-white outline-none text-sm font-bold text-[#1C1917] transition-all"
-              placeholder="Seu nome completo"
-            />
+            <label className={lbl}><User size={12} className="text-[#C4622D]" /> Nome Completo</label>
+            <input value={nome} onChange={e => setNome(e.target.value)} className={inp} placeholder="Seu nome completo" />
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1 flex items-center gap-2">
-              <School size={12} className="text-[#C4622D]" /> Escola Padrão
-            </label>
-            <input
-              value={escola}
-              onChange={e => setEscola(e.target.value)}
-              className="w-full p-4 rounded-2xl border-2 border-[#E8E0D4] bg-[#F2EEE6] focus:border-[#C4622D] focus:bg-white outline-none text-sm font-bold text-[#1C1917] transition-all"
-              placeholder="Nome da instituição"
-            />
+            <label className={lbl}><School size={12} className="text-[#C4622D]" /> Escola Padrão</label>
+            <input value={escola} onChange={e => setEscola(e.target.value)} className={inp} placeholder="Nome da instituição" />
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase text-[#8C7B70] tracking-widest ml-1 flex items-center gap-2">
-              <BookOpen size={12} className="text-[#C4622D]" /> Matéria Favorita
-            </label>
-            <input
-              value={materiaPadrao}
-              onChange={e => setMateriaPadrao(e.target.value)}
-              className="w-full p-4 rounded-2xl border-2 border-[#E8E0D4] bg-[#F2EEE6] focus:border-[#C4622D] focus:bg-white outline-none text-sm font-bold text-[#1C1917] transition-all"
-              placeholder="Ex: Inteligência Artificial"
-            />
+            <label className={lbl}><BookOpen size={12} className="text-[#C4622D]" /> Matéria Favorita</label>
+            <input value={materiaPadrao} onChange={e => setMateriaPadrao(e.target.value)} className={inp} placeholder="Ex: Inteligência Artificial" />
           </div>
-
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full py-4 bg-[#C4622D] text-white rounded-2xl flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-[#C4622D]/20 hover:bg-[#9C4A1F] transition-all disabled:bg-[#8C7B70]"
-          >
-            {saving ? <Loader2 className="animate-spin" size={18} /> : saved ? <CheckCircle size={18} /> : <Save size={18} />}
-            {saving ? 'Salvando...' : saved ? 'Perfil Atualizado!' : 'Salvar Perfil'}
-          </button>
         </div>
+
+        {/* ── Dados de Pagamento ── */}
+        <div className="bg-white rounded-[32px] border border-[#E8E0D4] p-6 md:p-8 space-y-6 shadow-sm">
+          <div>
+            <p className="text-[10px] font-black uppercase text-[#C4622D] tracking-widest">Dados para Pagamento</p>
+            <p className="text-[10px] text-[#8C7B70] font-bold mt-1">Necessários para emitir cobranças PIX via Asaas.</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2 col-span-2 md:col-span-1">
+              <label className={lbl}><CreditCard size={12} className="text-[#C4622D]" /> CPF</label>
+              <input value={cpf} onChange={e => setCpf(fmtCpf(e.target.value))} className={inp} placeholder="000.000.000-00" maxLength={14} inputMode="numeric" />
+            </div>
+            <div className="space-y-2 col-span-2 md:col-span-1">
+              <label className={lbl}><Phone size={12} className="text-[#C4622D]" /> Telefone / WhatsApp</label>
+              <input value={telefone} onChange={e => setTelefone(fmtTelefone(e.target.value))} className={inp} placeholder="(00) 00000-0000" maxLength={15} inputMode="numeric" />
+            </div>
+          </div>
+
+          {/* CEP com auto-preenchimento */}
+          <div className="space-y-2">
+            <label className={lbl}>
+              <MapPin size={12} className="text-[#C4622D]" /> CEP
+              {loadingCep && <Loader2 size={10} className="animate-spin text-[#C4622D]" />}
+            </label>
+            <input
+              value={cep}
+              onChange={e => { const v = fmtCep(e.target.value); setCep(v); buscarCep(v) }}
+              className={inp}
+              placeholder="00000-000"
+              maxLength={9}
+              inputMode="numeric"
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2 col-span-2">
+              <label className={lbl}><Home size={12} className="text-[#C4622D]" /> Endereço</label>
+              <input value={endereco} onChange={e => setEndereco(e.target.value)} className={inp} placeholder="Rua / Av." />
+            </div>
+            <div className="space-y-2">
+              <label className={lbl}>Número</label>
+              <input value={numeroEndereco} onChange={e => setNumeroEndereco(e.target.value)} className={inp} placeholder="Nº" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className={lbl}>Complemento</label>
+              <input value={complemento} onChange={e => setComplemento(e.target.value)} className={inp} placeholder="Apto, Sala..." />
+            </div>
+            <div className="space-y-2">
+              <label className={lbl}>Bairro</label>
+              <input value={bairro} onChange={e => setBairro(e.target.value)} className={inp} placeholder="Bairro" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2 col-span-2">
+              <label className={lbl}>Cidade</label>
+              <input value={cidade} onChange={e => setCidade(e.target.value)} className={inp} placeholder="Cidade" />
+            </div>
+            <div className="space-y-2">
+              <label className={lbl}>Estado</label>
+              <select value={estado} onChange={e => setEstado(e.target.value)} className={inp}>
+                <option value="">UF</option>
+                {ESTADOS.map(uf => <option key={uf} value={uf}>{uf}</option>)}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="w-full py-4 bg-[#C4622D] text-white rounded-2xl flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-[#C4622D]/20 hover:bg-[#9C4A1F] transition-all disabled:bg-[#8C7B70]"
+        >
+          {saving ? <Loader2 className="animate-spin" size={18} /> : saved ? <CheckCircle size={18} /> : <Save size={18} />}
+          {saving ? 'Salvando...' : saved ? 'Perfil Atualizado!' : 'Salvar Perfil'}
+        </button>
 
         <button
           onClick={handleLogout}

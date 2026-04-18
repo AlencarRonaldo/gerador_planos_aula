@@ -11,10 +11,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Nenhuma aula informada." }, { status: 400 });
     }
 
-    const finalKey = process.env.GEMINI_API_KEY || "AIzaSyA0qkT71Y-uwh6J1y99TqnWmmPRpewglHo";
-
-    console.log("[GERAR] Recebendo requisição, lessons:", lessons?.length)
-    console.log("[GERAR] API Key disponível:", !!finalKey)
+    const finalKey = process.env.GEMINI_API_KEY;
 
     if (!finalKey) {
       console.error("[GERAR] API Key não encontrada")
@@ -22,7 +19,7 @@ export async function POST(req: Request) {
     }
 
     const genAI = new GoogleGenerativeAI(finalKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }, { apiVersion: "v1" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const componente = lessons[0].componente?.toLowerCase() || "";
     let itinerariosInfo = "";

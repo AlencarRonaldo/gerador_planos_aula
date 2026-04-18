@@ -28,8 +28,8 @@ export default function HistoricoPage() {
           .from('planos_gerados')
           .select('*')
           .eq('usuario_id', user.id)
-          .order('created_at', { ascending: false })
-        
+          .order('criado_em', { ascending: false })
+
         if (!error) setPlanos(data || [])
       }
       setLoading(false)
@@ -96,7 +96,7 @@ export default function HistoricoPage() {
                     <p className="text-muted text-xs font-medium line-clamp-1 italic">"{plano.tema}"</p>
                     
                     <div className="flex flex-wrap gap-x-5 gap-y-2 mt-4 text-[9px] font-black text-muted/60 uppercase tracking-[0.1em]">
-                      <div className="flex items-center gap-1.5"><Calendar size={12} className="text-terra/50" /> {new Date(plano.created_at).toLocaleDateString('pt-BR')}</div>
+                      <div className="flex items-center gap-1.5"><Calendar size={12} className="text-terra/50" /> {new Date(plano.criado_em).toLocaleDateString('pt-BR')}</div>
                       <div className="flex items-center gap-1.5"><School size={12} className="text-terra/50" /> {plano.escola}</div>
                       <div className="flex items-center gap-1.5"><User size={12} className="text-terra/50" /> {plano.turma}</div>
                     </div>
