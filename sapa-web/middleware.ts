@@ -56,8 +56,8 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Se o usuário não está logado e tenta acessar páginas restritas
-  if (!user && (request.nextUrl.pathname === '/' || request.nextUrl.pathname.startsWith('/gerador') || request.nextUrl.pathname.startsWith('/historico') || request.nextUrl.pathname.startsWith('/perfil') || request.nextUrl.pathname.startsWith('/planos') || request.nextUrl.pathname.startsWith('/admin'))) {
+  // Se o usuário não está logado e tenta acessar páginas restritas (exceto a home que agora tem a Landing Page)
+  if (!user && (request.nextUrl.pathname.startsWith('/gerador') || request.nextUrl.pathname.startsWith('/historico') || request.nextUrl.pathname.startsWith('/perfil') || request.nextUrl.pathname.startsWith('/planos') || request.nextUrl.pathname.startsWith('/admin'))) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
