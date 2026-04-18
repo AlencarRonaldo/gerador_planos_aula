@@ -1,4 +1,4 @@
-import { PlusCircle, Clock, BookOpen, FileText, ChevronRight, BarChart3, CalendarDays } from 'lucide-react'
+import { PlusCircle, BookOpen, FileText, ChevronRight, BarChart3, CalendarDays, Coins } from 'lucide-react'
 import Link from 'next/link'
 import { createSupabaseServer } from '../lib/supabase-server'
 
@@ -116,17 +116,12 @@ export default async function Home() {
               )}
             </div>
             <div className="relative z-10 flex flex-col items-start md:items-end gap-2 w-full md:w-auto">
-              <Link href="/gerador" className="w-full md:w-auto">
+              <Link href="/planos" className="w-full md:w-auto">
                 <button className="w-full md:w-auto px-6 py-3 bg-[#C4622D] text-white rounded-xl flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest shadow-lg shadow-[#C4622D]/20 hover:bg-[#9C4A1F] transition-all">
-                  <PlusCircle size={16} />
-                  Novo Plano
+                  <Coins size={16} />
+                  Inserir Créditos
                 </button>
               </Link>
-              {!isFull && (
-                <Link href="/planos" className="w-full md:w-auto text-center text-[10px] font-black text-white/40 hover:text-[#E07A4A] transition-colors uppercase tracking-widest">
-                  Fazer Upgrade →
-                </Link>
-              )}
             </div>
           </div>
 
@@ -155,6 +150,16 @@ export default async function Home() {
                 <span className="text-[8px] font-black uppercase text-[#C89B3C] bg-[#C89B3C]/10 px-1.5 py-0.5 rounded">Novos planos</span>
               </div>
             </div>
+          </div>
+
+          {/* ── Novo Plano de Aula ── */}
+          <div className="col-span-1 md:col-span-12 flex justify-center">
+            <Link href="/gerador" className="w-full md:w-auto">
+              <button className="w-full md:w-auto px-8 py-4 bg-[#C4622D] text-white rounded-2xl flex items-center justify-center gap-3 text-sm font-black uppercase tracking-widest shadow-xl shadow-[#C4622D]/25 hover:bg-[#9C4A1F] transition-all">
+                <PlusCircle size={20} />
+                Novo Plano de Aula
+              </button>
+            </Link>
           </div>
 
           {/* ── Histórico Recente ── */}
