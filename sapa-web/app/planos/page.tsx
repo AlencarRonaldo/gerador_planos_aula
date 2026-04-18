@@ -354,13 +354,13 @@ export default function PlanosPage() {
               {copiado ? 'Copiado!' : 'Copiar Código PIX'}
             </button>
 
-            <p className="text-center text-muted text-[10px] mt-5 font-medium leading-relaxed uppercase tracking-tight opacity-60">
+            <p className="text-center text-graphite/60 text-[11px] mt-5 font-semibold leading-relaxed tracking-tight">
               Os créditos são liberados após confirmação do pagamento pelo banco.
             </p>
 
             {/* Asaas branding */}
             <div className="mt-6 pt-5 border-t border-stone/20 flex flex-col items-center gap-2">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-muted/50">Pagamento processado com segurança por</p>
+              <p className="text-[10px] font-bold tracking-widest text-graphite/50">Pagamento processado com segurança por</p>
               <img src="/asaas-logo.svg" alt="Asaas" className="h-6 opacity-70" />
             </div>
           </div>
